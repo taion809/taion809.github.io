@@ -2,20 +2,20 @@
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
     <title>Http on Redstalker</title>
-    <link>http://redstalker.com/tags/http/</link>
+    <link>http://taion809.github.io/tags/http/</link>
     <description>Recent content in Http on Redstalker</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
     <copyright>Copyright (c) 2013 - 2015, Redstalker.com; All Rights Reserved.</copyright>
     <lastBuildDate>Sat, 19 Apr 2014 16:05:12 +0000</lastBuildDate>
-    <atom:link href="http://redstalker.com/tags/http/index.xml" rel="self" type="application/rss+xml" />
+    <atom:link href="http://taion809.github.io/tags/http/index.xml" rel="self" type="application/rss+xml" />
     
     <item>
       <title>Getting Started with Gorilla MUX</title>
-      <link>http://redstalker.com/blog/2014/04/19/getting-started-with-gorilla-mux/</link>
+      <link>http://taion809.github.io/blog/2014/04/19/getting-started-with-gorilla-mux/</link>
       <pubDate>Sat, 19 Apr 2014 16:05:12 +0000</pubDate>
       
-      <guid>http://redstalker.com/blog/2014/04/19/getting-started-with-gorilla-mux/</guid>
+      <guid>http://taion809.github.io/blog/2014/04/19/getting-started-with-gorilla-mux/</guid>
       <description>
 
 &lt;p&gt;This is going to be short and sweet.  I have been looking at getting into Go for awhile but lacked incentive.  That has, as of a week ago, changed and it&amp;rsquo;s full speed ahead.&lt;/p&gt;

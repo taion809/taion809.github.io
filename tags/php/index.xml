@@ -2,20 +2,20 @@
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
     <title>Php on Redstalker</title>
-    <link>http://redstalker.com/tags/php/</link>
+    <link>http://taion809.github.io/tags/php/</link>
     <description>Recent content in Php on Redstalker</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
     <copyright>Copyright (c) 2013 - 2015, Redstalker.com; All Rights Reserved.</copyright>
     <lastBuildDate>Sun, 06 Dec 2015 14:24:50 -0500</lastBuildDate>
-    <atom:link href="http://redstalker.com/tags/php/index.xml" rel="self" type="application/rss+xml" />
+    <atom:link href="http://taion809.github.io/tags/php/index.xml" rel="self" type="application/rss+xml" />
     
     <item>
       <title>Install PHP7</title>
-      <link>http://redstalker.com/blog/2015/12/06/install-php7/</link>
+      <link>http://taion809.github.io/blog/2015/12/06/install-php7/</link>
       <pubDate>Sun, 06 Dec 2015 14:24:50 -0500</pubDate>
       
-      <guid>http://redstalker.com/blog/2015/12/06/install-php7/</guid>
+      <guid>http://taion809.github.io/blog/2015/12/06/install-php7/</guid>
       <description>
 
 &lt;p&gt;&lt;a href=&#34;http://php.net/archive/2015.php#id2015-12-03-1&#34;&gt;PHP7 was released this month&lt;/a&gt;, exciting! So how do you get ahold of it?&lt;/p&gt;

@@ -2,20 +2,20 @@
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
     <title>Mysql on Redstalker</title>
-    <link>http://redstalker.com/tags/mysql/</link>
+    <link>http://taion809.github.io/tags/mysql/</link>
     <description>Recent content in Mysql on Redstalker</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
     <copyright>Copyright (c) 2013 - 2015, Redstalker.com; All Rights Reserved.</copyright>
     <lastBuildDate>Sat, 21 Sep 2013 10:27:15 +0000</lastBuildDate>
-    <atom:link href="http://redstalker.com/tags/mysql/index.xml" rel="self" type="application/rss+xml" />
+    <atom:link href="http://taion809.github.io/tags/mysql/index.xml" rel="self" type="application/rss+xml" />
     
     <item>
       <title>Splitting Mysql Dumps</title>
-      <link>http://redstalker.com/blog/2013/09/21/splitting-mysql-dumps/</link>
+      <link>http://taion809.github.io/blog/2013/09/21/splitting-mysql-dumps/</link>
       <pubDate>Sat, 21 Sep 2013 10:27:15 +0000</pubDate>
       
-      <guid>http://redstalker.com/blog/2013/09/21/splitting-mysql-dumps/</guid>
+      <guid>http://taion809.github.io/blog/2013/09/21/splitting-mysql-dumps/</guid>
       <description>
 
 &lt;p&gt;The version of phpMyAdmin on Rackspace Cloud Sites has a hard limit of 16Mb for imported SQL. I recently had to migrate a database that was over 500Mb.&lt;/p&gt;
