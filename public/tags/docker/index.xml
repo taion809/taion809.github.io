@@ -1,0 +1,145 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Docker on Redstalker</title>
+    <link>http://redstalker.com/tags/docker/</link>
+    <description>Recent content in Docker on Redstalker</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en-us</language>
+    <copyright>Copyright (c) 2013 - 2015, Redstalker.com; All Rights Reserved.</copyright>
+    <lastBuildDate>Sat, 09 Nov 2013 01:31:43 +0000</lastBuildDate>
+    <atom:link href="http://redstalker.com/tags/docker/index.xml" rel="self" type="application/rss+xml" />
+    
+    <item>
+      <title>Docker: Containing Madness</title>
+      <link>http://redstalker.com/blog/2013/11/09/docker-containing-madness/</link>
+      <pubDate>Sat, 09 Nov 2013 01:31:43 +0000</pubDate>
+      
+      <guid>http://redstalker.com/blog/2013/11/09/docker-containing-madness/</guid>
+      <description>
+
+&lt;p&gt;Recently we had one of our important clients come to us with a node.js application they needed updated.  I&amp;rsquo;m not sure of the circumstances surrounding this application but it looked and felt like a ball of spaghetti was thrown in my face.  I punted the modifications to another developer in favor of doing the deployment with docker and supervisord.&lt;/p&gt;
+
+&lt;h3 id=&#34;the-problem&#34;&gt;The Problem&lt;/h3&gt;
+
+&lt;p&gt;This node.js application has many assumptions about libraries and file locations that make me cringe, for example it simply won&amp;rsquo;t work unless packages are installed globally &lt;strong&gt;and&lt;/strong&gt; locally.&lt;/p&gt;
+
+&lt;h3 id=&#34;the-solution&#34;&gt;The Solution&lt;/h3&gt;
+
+&lt;p&gt;Build a docker image containing the application so that it could be deployed without touching anything outside of its container, think like a chroot.&lt;/p&gt;
+
+&lt;h3 id=&#34;let-s-do-it&#34;&gt;Let&amp;rsquo;s Do It!&lt;/h3&gt;
+
+&lt;p&gt;The application we will be using can be found in my &lt;a href=&#34;https://github.com/taion809/hello-node&#34;&gt;github repository&lt;/a&gt;.&lt;/p&gt;
+
+&lt;p&gt;The following Dockerfile will be used to build our image.  We are using Dockerfiles because it  makes building images simple, versioned, and easily distributable.&lt;/p&gt;
+
+&lt;p&gt;Our Dockerfile
+{% gist 7380804 Dockerfile %}&lt;/p&gt;
+
+&lt;p&gt;In order to build our image from this Dockerfile we will execute the following command.&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;sudo docker build -t=&#39;johnsn/webapp&#39; . 
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;You should see output like the following&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;# Excerpt
+Step 14 : ENTRYPOINT [&amp;quot;/usr/bin/nodejs&amp;quot;]
+ ---&amp;gt; Running in 0db9a210f33c
+ ---&amp;gt; a82cdefae38d
+Step 15 : CMD [&amp;quot;server.js&amp;quot;]
+ ---&amp;gt; Running in c11ec2908881
+ ---&amp;gt; 439913416e8f
+Successfully built 439913416e8f
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;You can now make the choice to push your image to the docker.io registry, a private registry, or not push at all.  If you chose to push it to a registry you will need to use the docker push command.&lt;/p&gt;
+
+&lt;p&gt;From here use docker run to create and start a container so we can verify the build worked.&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;sudo docker run -d -p 5000:80 johnsn/webapp
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;You should receive output like the following, we used the -p flag to map our host port 5000 to the container port 80 which we exposed in the Dockerfile&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;# Your container ID will be returned
+3f1a9b9ac4e4
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Verify with curl&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;curl -v localhost:5000
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;At this point we have a web application running inside a docker container we can serve on port 5000.  But, we have a problem, after a reboot we need to manually run the docker run command to bring up our web app again.  Let&amp;rsquo;s solve that problem with supervisord.&lt;/p&gt;
+
+&lt;p&gt;Supervisord is really simple and convenient which is why I am using it over something like daemontools.&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;[program:webapp]
+command=/usr/bin/docker run -p 5000:80 johnsn/webapp
+autostart=true
+autorestart=true
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Notice we do not use the -d flag, this is because Supervisord will run our container as a daemon.&lt;/p&gt;
+
+&lt;p&gt;Now restart the supervisord service with &lt;code&gt;service&lt;/code&gt; or using &lt;code&gt;supervisorctl&lt;/code&gt;&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;# sudo service supervisor restart does not work :\
+
+sudo service supervisor stop
+sudo service supervisor start
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Verify&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;ps aux | grep webapp
+
+# root      8964  0.0  0.7 186948  3600 ?        Sl   03:54   0:00 /usr/bin/docker run -p 5000:80 johnsn/webapp
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;!-- Logging options here... sometime. --&gt;
+
+&lt;p&gt;Alright, so let&amp;rsquo;s setup nginx properly so we can have webapp.com instead of webapp.com:5000&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;## HTTP server.
+server {
+    listen 80; # IPv4
+
+    server_name webapp.com;
+
+    ## Access and error logs.
+    access_log /var/log/nginx/webapp.com_access.log;
+    error_log /var/log/nginx/webapp.com_error.log;
+
+    location / {
+        proxy_set_header X-Forwarded-Host $host;
+        proxy_set_header X-Forwarded-Server $host;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_pass http://127.0.0.1:5000;
+    }
+
+} # HTTP server
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Restart the nginx and verify!&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;curl -v webapp.com
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;That is it, 30 minutes later we have an immutable linux container for our web app that we can then deploy to a single server or many servers.&lt;/p&gt;
+
+&lt;p&gt;Please let me know if you see errors, have corrections, or know a better way.&lt;/p&gt;
+
+&lt;h3 id=&#34;references&#34;&gt;References&lt;/h3&gt;
+
+&lt;ul&gt;
+&lt;li&gt;&lt;a href=&#34;http://docker.io&#34;&gt;Docker&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;http://supervisord.org/&#34;&gt;Supervisord&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+</description>
+    </item>
+    
+  </channel>
+</rss>

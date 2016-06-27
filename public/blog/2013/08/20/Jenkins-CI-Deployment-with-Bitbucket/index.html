@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us">
+<head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+  <title>Jenkins CI Deployment with Bitbucket &middot; Nicholas J</title>
+
+  
+  <link rel="stylesheet" href="http://localhost:1313/css/poole.css">
+  <link rel="stylesheet" href="http://localhost:1313/css/hyde.css">
+  <link rel="stylesheet" href="http://localhost:1313/css/poole-overrides.css">
+  <link rel="stylesheet" href="http://localhost:1313/css/hyde-overrides.css">
+  <link rel="stylesheet" href="http://localhost:1313/css/hyde-x.css">
+  <link rel="stylesheet" href="http://localhost:1313/css/highlight/sunburst.css">
+  <link rel="stylesheet" href="http://fonts.googleapis.com/css?family=PT+Sans:400,400italic,700|Abril+Fatface">
+
+  
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/apple-touch-icon-144-precomposed.png">
+  <link href="/favicon.png" rel="icon">
+
+  
+  <link href="" rel="alternate" type="application/rss+xml" title="Redstalker &middot; Nicholas J" />
+
+  <meta name="description" content="Setting up Jenkins and Bitbucket for fun and adventure.">
+  <meta name="keywords" content="nicholas johns,home,website,blog,golang,docker,php">
+  
+</head>
+<body class="theme-base-08">
+<div class="sidebar">
+  <div class="container sidebar-sticky">
+    <div class="sidebar-about">
+      <img src="http://www.gravatar.com/avatar/dc6e8fcb5d2bf3a94b850f295b4102c6?s=200" alt="gravatar">
+      <h1>Nicholas J</h1>
+      <p class="lead">Another random programmer&#39;s blog</p>
+    </div>
+
+    <ul class="sidebar-nav">
+      <li class="sidebar-nav-item"><a href="http://localhost:1313/">Blog</a></li>
+      
+    </ul>
+
+    <ul class="sidebar-nav">
+      <li class="sidebar-nav-item"><a href="https://github.com/taion809">GitHub</a></li>
+      
+      
+      
+      <li class="sidebar-nav-item"><a href="https://twitter.com/taion809">Twitter</a></li>
+    </ul>
+
+    <p>Copyright &copy; 2015 <a href="http://localhost:1313/license">License</a><br/>
+       Powered by <a href="http://hugo.spf13.com">Hugo</a> and <a href="https://github.com/zyro/hyde-x">Hyde-X</a></p>
+  </div>
+</div>
+
+<div class="content container">
+  <div class="post">
+    <h1>Jenkins CI Deployment with Bitbucket</h1>
+    <span class="post-date">Aug 20, 2013 &middot; 4 minute read &middot; <a href="http://localhost:1313/blog/2013/08/20/Jenkins-CI-Deployment-with-Bitbucket/#disqus_thread">Comments</a>
+    
+    <br/>
+    
+    <a class="label" href="http://localhost:1313/categories/Development">Development</a>
+    </span>
+    
+
+<p>I recently had someone ask me how to get started with Jenkins-CI, git, and ssh. My team is using it now for a CI-git deployment scheme but I was not the one to install or configure it. I didn&rsquo;t really want to let down my friend with an &ldquo;I don&rsquo;t know, google it&rdquo; answer so I spun up a new EC2 instance on Amazon AWS, installed Jenkins, pushed a new private repo to bitbucket, pulled and deployed that push on my Jenkins test server.</p>
+
+<p>Setting up a t1.micro EC2 instance in Amazon AWS is simple enough so we can skip that.</p>
+
+<p>Steps for installing Jenkins-CI can be found on its homepage so we can safely skip that as well. (Note: for this test I was not using jenkins behind a webserver proxy)</p>
+
+<p>For the following steps I executed them as the jenkins user, you may do it another way if you wish, this is simply how I did it.</p>
+
+<h4 id="toc_0">Create SSH Keypair</h4>
+
+<p>Creating an SSH keypair for use with jenkins and bitbucket:
+From the server:</p>
+
+<pre><code>ssh-keygen -b 2048 -t rsa -c &quot;Jenkins Deployment Keys&quot; -f /output/path/privatekey
+chmod 0600 /output/path/privatekey
+</code></pre>
+
+<p>Note: for my test I built the keys and configured git as the jenkins user</p>
+
+<p>These sets of keys should be created with an empty password, for which you can simply press enter on the prompt.
+Configure SSH</p>
+
+<h4 id="toc_1">Create a config to map the host and identity files</h4>
+
+<pre><code>vim /var/lib/jenkins/.ssh/config
+</code></pre>
+
+<p>My config file looks like this</p>
+
+<pre><code>Host jenkins-test-bitbucket
+    HostName bitbucket.org
+    User git
+    IdentityFile /var/lib/jenkins/.ssh/privatekey
+    IdentitiesOnly yes
+</code></pre>
+
+<h4 id="toc_2">Add SSH public key to bitbucket</h4>
+
+<p>At this point you have created your public and private keypair and created a config file to map the identity file to a host. Now, the public key needs to be added to your bitbucket account, the steps to accomplish this (should it change in the future) can be found on the bitbucket.org website but at the time of this writing you can</p>
+
+<ul>
+<li>Login to bitbucket.org</li>
+<li>Navigate to your repository</li>
+<li>Select the Gear icon</li>
+<li>Select Deployment Keys</li>
+<li>Click Add Keys</li>
+<li>Give it a witty label (or not)</li>
+<li>Copy and paste your public key</li>
+<li>Click Add Key</li>
+</ul>
+
+<h4 id="toc_3">SSH Test Connection</h4>
+
+<p>Now, back to your server, you will need to approve the host. The easiest way is to simply try to connect.</p>
+
+<pre><code>ssh jenkins-test-bitbucket
+</code></pre>
+
+<p>When prompted to continue the connection and add the host to your known hosts file type yes</p>
+
+<p>If everything has gone smooth so far you should see the following output</p>
+
+<pre><code>jenkins@localhost:/var/lib/jenkins$ ssh jenkins-test-bitbucket
+PTY allocation request failed on channel 0
+conq: logged in as myusername.
+
+You can use git or hg to connect to Bitbucket. Shell access is disabled.
+Connection to bitbucket.org closed.
+</code></pre>
+
+<p>Now that you have verified you can connect to bitbucket via ssh you need to install git, the jenkins git plugin, and configure the global settings for git.</p>
+
+<h4 id="toc_4">Configure Git</h4>
+
+<p>Git: on debian / ubuntu you can simply</p>
+
+<pre><code>apt-get install git
+</code></pre>
+
+<p>Git Plugin: the Jenkins-CI website maintains this file, download it and place it in the JENKINS_HOME/plugins directory (mine is located /var/lib/jenkins/plugins)</p>
+
+<p>Configure git: you need to set the username and email address for your user
+Example:</p>
+
+<pre><code>git config --global user.email &quot;jenkins@localhost&quot;
+git config --global user.name &quot;jenkins&quot;
+</code></pre>
+
+<p>Obviously replace those values with what you like.</p>
+
+<h4 id="toc_5">Configure the Jenkins Job</h4>
+
+<ul>
+<li>Login to your Jenkins website</li>
+<li>Create a new job</li>
+<li>Configure the job</li>
+<li>Select Git for your SCM option</li>
+<li>The git repo address will be in a format such as this jenkins-test-bitbucket:username/path/to/repo.git</li>
+<li>Continue configuring (for example, if you have a shell script or ant script to run after you pull the repo that runs unit tests)</li>
+<li>Save</li>
+<li>BUILD!</li>
+</ul>
+
+<p>If everything was successful and the planets are aligned you should see your repo pull and if you configured any scripts they should run.</p>
+
+<p>I&rsquo;m sure there are others that have a better, faster way to accomplish this but this is simply how I did it and hopefully this helps someone.</p>
+
+  </div>
+  <div id="disqus_thread"></div>
+</div>
+
+
+<script type="text/javascript">
+var disqus_shortname = "redstalker";
+(function () {
+    var s = document.createElement('script'); s.async = true;
+    s.type = 'text/javascript';
+    s.src = '//' + disqus_shortname + '.disqus.com/count.js';
+    (document.getElementsByTagName('HEAD')[0] || document.getElementsByTagName('BODY')[0]).appendChild(s);
+}());
+</script>
+
+
+
+<script type="text/javascript">
+    var disqus_shortname = "redstalker";
+    (function() {
+        var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+        dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+        (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    })();
+</script>
+<noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+<a href="http://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+
+<script src="http://localhost:1313/js/highlight.pack.js"></script>
+<script>hljs.initHighlightingOnLoad();</script>
+
+<script>
+  var _gaq=[['_setAccount','UA-43022143-1'],['_trackPageview']];
+  (function(d,t){var g=d.createElement(t),s=d.getElementsByTagName(t)[0];
+  g.src=('https:'==location.protocol?'//ssl':'//www')+'.google-analytics.com/ga.js';
+  s.parentNode.insertBefore(g,s)}(document,'script'));
+</script>
+
+</body>
+</html>

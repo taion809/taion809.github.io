@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="en">
+
+  <head>
+  <meta charset="utf-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+
+  <title>Docker: Containing Madness</title>
+
+  <meta name="author" content="Nicholas J" />
+  
+  
+  <meta name="description" content="Use Docker to containerize crazy legacy software.">
+  
+
+  <meta name="generator" content="Hugo 0.16" />
+
+  <link rel="alternate" href="http://redstalker.com/index.xml" type="application/rss+xml" title="Redstalker">
+
+  <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/font-awesome/4.5.0/css/font-awesome.min.css" />
+  <link rel="stylesheet" href="http://redstalker.com/css/bootstrap.min.css" />
+  <link rel="stylesheet" href="http://redstalker.com/css/main.css" />
+  <link rel="stylesheet" href="//fonts.googleapis.com/css?family=Lora:400,700,400italic,700italic" />
+  <link rel="stylesheet" href="//fonts.googleapis.com/css?family=Open+Sans:300italic,400italic,600italic,700italic,800italic,400,300,600,700,800" />
+  <link rel="stylesheet" href="http://redstalker.com/css/pygment_highlights.css" />
+  
+  
+  <meta property="og:title" content="Docker: Containing Madness" />
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="/" />
+  <meta property="og:image" content="" />
+  
+</head>
+
+
+  <body>
+
+    <nav class="navbar navbar-default navbar-fixed-top navbar-custom">
+  <div class="container-fluid">
+    <div class="navbar-header">
+      <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#main-navbar">
+        <span class="sr-only">Toggle navigation</span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+      <a class="navbar-brand" href="http://redstalker.com/">Redstalker</a>
+    </div>
+
+    <div class="collapse navbar-collapse" id="main-navbar">
+      <ul class="nav navbar-nav navbar-right">
+      
+      </ul>
+    </div>
+
+	<div class="avatar-container">
+	  <div class="avatar-img-border">
+      
+	  </div>
+	</div>
+
+  </div>
+</nav>
+
+
+    <div role="main" class="container main-content">
+
+      
+        
+
+
+
+
+
+<header class="header-section ">
+
+<div class="intro-header no-img">
+  <div class="container">
+    <div class="row">
+      <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+        <div class="post-heading">
+          <h1>Docker: Containing Madness</h1>
+      
+      
+      
+      <span class="post-meta">Posted on November 9, 2013</span>
+      
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+</header>
+
+
+
+
+<div class="container">
+  <div class="row">
+    <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+      <article role="main" class="blog-post">
+          
+
+<p>Recently we had one of our important clients come to us with a node.js application they needed updated.  I&rsquo;m not sure of the circumstances surrounding this application but it looked and felt like a ball of spaghetti was thrown in my face.  I punted the modifications to another developer in favor of doing the deployment with docker and supervisord.</p>
+
+<h3 id="the-problem">The Problem</h3>
+
+<p>This node.js application has many assumptions about libraries and file locations that make me cringe, for example it simply won&rsquo;t work unless packages are installed globally <strong>and</strong> locally.</p>
+
+<h3 id="the-solution">The Solution</h3>
+
+<p>Build a docker image containing the application so that it could be deployed without touching anything outside of its container, think like a chroot.</p>
+
+<h3 id="let-s-do-it">Let&rsquo;s Do It!</h3>
+
+<p>The application we will be using can be found in my <a href="https://github.com/taion809/hello-node">github repository</a>.</p>
+
+<p>The following Dockerfile will be used to build our image.  We are using Dockerfiles because it  makes building images simple, versioned, and easily distributable.</p>
+
+<p>Our Dockerfile
+{% gist 7380804 Dockerfile %}</p>
+
+<p>In order to build our image from this Dockerfile we will execute the following command.</p>
+
+<pre><code>sudo docker build -t='johnsn/webapp' . 
+</code></pre>
+
+<p>You should see output like the following</p>
+
+<pre><code># Excerpt
+Step 14 : ENTRYPOINT [&quot;/usr/bin/nodejs&quot;]
+ ---&gt; Running in 0db9a210f33c
+ ---&gt; a82cdefae38d
+Step 15 : CMD [&quot;server.js&quot;]
+ ---&gt; Running in c11ec2908881
+ ---&gt; 439913416e8f
+Successfully built 439913416e8f
+</code></pre>
+
+<p>You can now make the choice to push your image to the docker.io registry, a private registry, or not push at all.  If you chose to push it to a registry you will need to use the docker push command.</p>
+
+<p>From here use docker run to create and start a container so we can verify the build worked.</p>
+
+<pre><code>sudo docker run -d -p 5000:80 johnsn/webapp
+</code></pre>
+
+<p>You should receive output like the following, we used the -p flag to map our host port 5000 to the container port 80 which we exposed in the Dockerfile</p>
+
+<pre><code># Your container ID will be returned
+3f1a9b9ac4e4
+</code></pre>
+
+<p>Verify with curl</p>
+
+<pre><code>curl -v localhost:5000
+</code></pre>
+
+<p>At this point we have a web application running inside a docker container we can serve on port 5000.  But, we have a problem, after a reboot we need to manually run the docker run command to bring up our web app again.  Let&rsquo;s solve that problem with supervisord.</p>
+
+<p>Supervisord is really simple and convenient which is why I am using it over something like daemontools.</p>
+
+<pre><code>[program:webapp]
+command=/usr/bin/docker run -p 5000:80 johnsn/webapp
+autostart=true
+autorestart=true
+</code></pre>
+
+<p>Notice we do not use the -d flag, this is because Supervisord will run our container as a daemon.</p>
+
+<p>Now restart the supervisord service with <code>service</code> or using <code>supervisorctl</code></p>
+
+<pre><code># sudo service supervisor restart does not work :\
+
+sudo service supervisor stop
+sudo service supervisor start
+</code></pre>
+
+<p>Verify</p>
+
+<pre><code>ps aux | grep webapp
+
+# root      8964  0.0  0.7 186948  3600 ?        Sl   03:54   0:00 /usr/bin/docker run -p 5000:80 johnsn/webapp
+</code></pre>
+
+<!-- Logging options here... sometime. -->
+
+<p>Alright, so let&rsquo;s setup nginx properly so we can have webapp.com instead of webapp.com:5000</p>
+
+<pre><code>## HTTP server.
+server {
+    listen 80; # IPv4
+
+    server_name webapp.com;
+
+    ## Access and error logs.
+    access_log /var/log/nginx/webapp.com_access.log;
+    error_log /var/log/nginx/webapp.com_error.log;
+
+    location / {
+        proxy_set_header X-Forwarded-Host $host;
+        proxy_set_header X-Forwarded-Server $host;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_pass http://127.0.0.1:5000;
+    }
+
+} # HTTP server
+</code></pre>
+
+<p>Restart the nginx and verify!</p>
+
+<pre><code>curl -v webapp.com
+</code></pre>
+
+<p>That is it, 30 minutes later we have an immutable linux container for our web app that we can then deploy to a single server or many servers.</p>
+
+<p>Please let me know if you see errors, have corrections, or know a better way.</p>
+
+<h3 id="references">References</h3>
+
+<ul>
+<li><a href="http://docker.io">Docker</a></li>
+<li><a href="http://supervisord.org/">Supervisord</a></li>
+</ul>
+
+      </article>
+
+      <ul class="pager blog-pager">
+        
+        <li class="previous">
+          <a href="http://redstalker.com/blog/2013/09/21/splitting-mysql-dumps/" data-toggle="tooltip" data-placement="top" title="Splitting Mysql Dumps">&larr; Previous Post</a>
+        </li>
+        
+        
+        <li class="next">
+          <a href="http://redstalker.com/blog/2014/04/19/getting-started-with-gorilla-mux/" data-toggle="tooltip" data-placement="top" title="Getting Started with Gorilla MUX">Next Post &rarr;</a>
+        </li>
+        
+      </ul>
+
+      
+      <div class="disqus-comments">
+        <div id="disqus_thread"></div>
+<script type="text/javascript">
+    var disqus_shortname = 'redstalker';
+    var disqus_identifier = 'http:\/\/redstalker.com\/blog\/2013\/11\/09\/docker-containing-madness\/';
+    var disqus_title = 'Docker: Containing Madness';
+    var disqus_url = 'http:\/\/redstalker.com\/blog\/2013\/11\/09\/docker-containing-madness\/';
+
+    (function() {
+        var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+        dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+        (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    })();
+</script>
+<noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+<a href="http://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+      </div>
+      
+
+    </div>
+  </div>
+</div>
+
+      
+
+    </div>
+
+    <footer>
+  <div class="container beautiful-jekyll-footer">
+    <div class="row">
+      <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+        <ul class="list-inline text-center footer-links">
+          
+          
+          <li>
+            <a href="https://github.com/taion809" title="GitHub">
+              <span class="fa-stack fa-lg">
+                <i class="fa fa-circle fa-stack-2x"></i>
+                <i class="fa fa-github fa-stack-1x fa-inverse"></i>
+              </span>
+            </a>
+          </li>
+          
+		      
+          <li>
+            <a href="https://twitter.com/taion809" title="Twitter">
+              <span class="fa-stack fa-lg">
+                <i class="fa fa-circle fa-stack-2x"></i>
+                <i class="fa fa-twitter fa-stack-1x fa-inverse"></i>
+              </span>
+            </a>
+          </li>
+          
+		      
+		      
+	    	  
+          
+          
+
+    		  <li>
+      			<a href="http://redstalker.com/index.xml" title="RSS">
+      			  <span class="fa-stack fa-lg">
+        				<i class="fa fa-circle fa-stack-2x"></i>
+        				<i class="fa fa-rss fa-stack-1x fa-inverse"></i>
+      			  </span>
+      			</a>
+    		  </li>		
+
+        </ul>
+        <p class="copyright text-muted">
+    		  Nicholas J
+    		  &nbsp;&bull;&nbsp;
+    		  2015
+    		  
+    		  
+    		  &nbsp;&bull;&nbsp;
+    		  <a href="http://redstalker.com/">Redstalker</a>
+    		  
+  	    </p>
+  	        
+    		<p class="theme-by text-muted">
+    		  Theme by
+    		  <a href="http://deanattali.com/beautiful-jekyll/">beautiful-jekyll</a>
+    		</p>
+      </div>
+    </div>
+  </div>
+</footer>
+
+<script src="http://redstalker.com/js/jquery-1.11.2.min.js"></script>
+<script src="http://redstalker.com/js/bootstrap.min.js"></script>
+<script src="http://redstalker.com/js/main.js"></script>
+
+
+
+  </body>
+</html>

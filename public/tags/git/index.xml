@@ -1,0 +1,131 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Git on Redstalker</title>
+    <link>http://redstalker.com/tags/git/</link>
+    <description>Recent content in Git on Redstalker</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en-us</language>
+    <copyright>Copyright (c) 2013 - 2015, Redstalker.com; All Rights Reserved.</copyright>
+    <lastBuildDate>Tue, 20 Aug 2013 13:23:00 +0000</lastBuildDate>
+    <atom:link href="http://redstalker.com/tags/git/index.xml" rel="self" type="application/rss+xml" />
+    
+    <item>
+      <title>Jenkins CI Deployment with Bitbucket</title>
+      <link>http://redstalker.com/blog/2013/08/20/jenkins-ci-deployment-with-bitbucket/</link>
+      <pubDate>Tue, 20 Aug 2013 13:23:00 +0000</pubDate>
+      
+      <guid>http://redstalker.com/blog/2013/08/20/jenkins-ci-deployment-with-bitbucket/</guid>
+      <description>
+
+&lt;p&gt;I recently had someone ask me how to get started with Jenkins-CI, git, and ssh. My team is using it now for a CI-git deployment scheme but I was not the one to install or configure it. I didn&amp;rsquo;t really want to let down my friend with an &amp;ldquo;I don&amp;rsquo;t know, google it&amp;rdquo; answer so I spun up a new EC2 instance on Amazon AWS, installed Jenkins, pushed a new private repo to bitbucket, pulled and deployed that push on my Jenkins test server.&lt;/p&gt;
+
+&lt;p&gt;Setting up a t1.micro EC2 instance in Amazon AWS is simple enough so we can skip that.&lt;/p&gt;
+
+&lt;p&gt;Steps for installing Jenkins-CI can be found on its homepage so we can safely skip that as well. (Note: for this test I was not using jenkins behind a webserver proxy)&lt;/p&gt;
+
+&lt;p&gt;For the following steps I executed them as the jenkins user, you may do it another way if you wish, this is simply how I did it.&lt;/p&gt;
+
+&lt;h4 id=&#34;create-ssh-keypair&#34;&gt;Create SSH Keypair&lt;/h4&gt;
+
+&lt;p&gt;Creating an SSH keypair for use with jenkins and bitbucket:
+From the server:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;ssh-keygen -b 2048 -t rsa -c &amp;quot;Jenkins Deployment Keys&amp;quot; -f /output/path/privatekey
+chmod 0600 /output/path/privatekey
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Note: for my test I built the keys and configured git as the jenkins user&lt;/p&gt;
+
+&lt;p&gt;These sets of keys should be created with an empty password, for which you can simply press enter on the prompt.
+Configure SSH&lt;/p&gt;
+
+&lt;h4 id=&#34;create-a-config-to-map-the-host-and-identity-files&#34;&gt;Create a config to map the host and identity files&lt;/h4&gt;
+
+&lt;pre&gt;&lt;code&gt;vim /var/lib/jenkins/.ssh/config
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;My config file looks like this&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;Host jenkins-test-bitbucket
+    HostName bitbucket.org
+    User git
+    IdentityFile /var/lib/jenkins/.ssh/privatekey
+    IdentitiesOnly yes
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h4 id=&#34;add-ssh-public-key-to-bitbucket&#34;&gt;Add SSH public key to bitbucket&lt;/h4&gt;
+
+&lt;p&gt;At this point you have created your public and private keypair and created a config file to map the identity file to a host. Now, the public key needs to be added to your bitbucket account, the steps to accomplish this (should it change in the future) can be found on the bitbucket.org website but at the time of this writing you can&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;Login to bitbucket.org&lt;/li&gt;
+&lt;li&gt;Navigate to your repository&lt;/li&gt;
+&lt;li&gt;Select the Gear icon&lt;/li&gt;
+&lt;li&gt;Select Deployment Keys&lt;/li&gt;
+&lt;li&gt;Click Add Keys&lt;/li&gt;
+&lt;li&gt;Give it a witty label (or not)&lt;/li&gt;
+&lt;li&gt;Copy and paste your public key&lt;/li&gt;
+&lt;li&gt;Click Add Key&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h4 id=&#34;ssh-test-connection&#34;&gt;SSH Test Connection&lt;/h4&gt;
+
+&lt;p&gt;Now, back to your server, you will need to approve the host. The easiest way is to simply try to connect.&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;ssh jenkins-test-bitbucket
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;When prompted to continue the connection and add the host to your known hosts file type yes&lt;/p&gt;
+
+&lt;p&gt;If everything has gone smooth so far you should see the following output&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;jenkins@localhost:/var/lib/jenkins$ ssh jenkins-test-bitbucket
+PTY allocation request failed on channel 0
+conq: logged in as myusername.
+
+You can use git or hg to connect to Bitbucket. Shell access is disabled.
+Connection to bitbucket.org closed.
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Now that you have verified you can connect to bitbucket via ssh you need to install git, the jenkins git plugin, and configure the global settings for git.&lt;/p&gt;
+
+&lt;h4 id=&#34;configure-git&#34;&gt;Configure Git&lt;/h4&gt;
+
+&lt;p&gt;Git: on debian / ubuntu you can simply&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;apt-get install git
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Git Plugin: the Jenkins-CI website maintains this file, download it and place it in the JENKINS_HOME/plugins directory (mine is located /var/lib/jenkins/plugins)&lt;/p&gt;
+
+&lt;p&gt;Configure git: you need to set the username and email address for your user
+Example:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;git config --global user.email &amp;quot;jenkins@localhost&amp;quot;
+git config --global user.name &amp;quot;jenkins&amp;quot;
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Obviously replace those values with what you like.&lt;/p&gt;
+
+&lt;h4 id=&#34;configure-the-jenkins-job&#34;&gt;Configure the Jenkins Job&lt;/h4&gt;
+
+&lt;ul&gt;
+&lt;li&gt;Login to your Jenkins website&lt;/li&gt;
+&lt;li&gt;Create a new job&lt;/li&gt;
+&lt;li&gt;Configure the job&lt;/li&gt;
+&lt;li&gt;Select Git for your SCM option&lt;/li&gt;
+&lt;li&gt;The git repo address will be in a format such as this jenkins-test-bitbucket:username/path/to/repo.git&lt;/li&gt;
+&lt;li&gt;Continue configuring (for example, if you have a shell script or ant script to run after you pull the repo that runs unit tests)&lt;/li&gt;
+&lt;li&gt;Save&lt;/li&gt;
+&lt;li&gt;BUILD!&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;If everything was successful and the planets are aligned you should see your repo pull and if you configured any scripts they should run.&lt;/p&gt;
+
+&lt;p&gt;I&amp;rsquo;m sure there are others that have a better, faster way to accomplish this but this is simply how I did it and hopefully this helps someone.&lt;/p&gt;
+</description>
+    </item>
+    
+  </channel>
+</rss>

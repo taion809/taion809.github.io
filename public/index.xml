@@ -1,0 +1,727 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Redstalker</title>
+    <link>http://redstalker.com/</link>
+    <description>Recent content on Redstalker</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en-us</language>
+    <copyright>Copyright (c) 2013 - 2015, Redstalker.com; All Rights Reserved.</copyright>
+    <lastBuildDate>Mon, 07 Dec 2015 09:00:43 -0500</lastBuildDate>
+    <atom:link href="http://redstalker.com/index.xml" rel="self" type="application/rss+xml" />
+    
+    <item>
+      <title>basic sqlx relation scanning</title>
+      <link>http://redstalker.com/blog/2015/12/07/basic-sqlx-relation-scanning/</link>
+      <pubDate>Mon, 07 Dec 2015 09:00:43 -0500</pubDate>
+      
+      <guid>http://redstalker.com/blog/2015/12/07/basic-sqlx-relation-scanning/</guid>
+      <description>&lt;p&gt;Very quick, I wanted to use &lt;code&gt;Get&lt;/code&gt; with a query that contained other tables.  The documentation does not have a lot of examples so here we go.&lt;/p&gt;
+
+&lt;p&gt;Given the following database schema&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-sql&#34;&gt;CREATE EXTENSION pgcrypto;
+
+CREATE TABLE content_types (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    name VARCHAR(255),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    deleted_at TIMESTAMP DEFAULT NULL
+);
+
+CREATE TABLE content (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    content_type_id UUID REFERENCES content_types(id) ON DELETE CASCADE ON UPDATE CASCADE,
+    content TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    deleted_at TIMESTAMP DEFAULT NULL
+)
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;I want to query and return a content row with its content_type, here is the struct I want to return.&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-go&#34;&gt;package main
+
+import (
+	&amp;quot;fmt&amp;quot;
+	&amp;quot;github.com/jmoiron/sqlx&amp;quot;
+	_ &amp;quot;github.com/lib/pq&amp;quot;
+	&amp;quot;log&amp;quot;
+	&amp;quot;time&amp;quot;
+)
+
+type ContentType struct {
+	Id        string     `db:&amp;quot;id&amp;quot;`
+	Name      string     `db:&amp;quot;name&amp;quot;`
+	CreatedAt *time.Time `db:&amp;quot;created_at&amp;quot;`
+	UpdatedAt *time.Time `db:&amp;quot;updated_at&amp;quot;`
+	DeletedAt *time.Time `db:&amp;quot;deleted_at&amp;quot;`
+}
+
+type Content struct {
+	Id          string     `db:&amp;quot;id&amp;quot;`
+	Content     string     `db:&amp;quot;content&amp;quot;`
+	CreatedAt   *time.Time `db:&amp;quot;created_at&amp;quot;`
+	UpdatedAt   *time.Time `db:&amp;quot;updated_at&amp;quot;`
+	DeletedAt   *time.Time `db:&amp;quot;deleted_at&amp;quot;`
+	ContentType `db:&amp;quot;content_type&amp;quot;`
+}
+
+func main() {
+	connection, err := sqlx.Connect(&amp;quot;postgres&amp;quot;, &amp;quot;postgres://user:pass@localhost:5432/database&amp;quot;)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	defer connection.Close()
+
+	query := `
+		SELECT content.*,
+			   content_types.id AS &amp;quot;content_type.id&amp;quot;,
+			   content_types.name AS &amp;quot;content_type.name&amp;quot;,
+			   content_types.created_at AS &amp;quot;content_type.created_at&amp;quot;,
+			   content_types.updated_at AS &amp;quot;content_type.updated_at&amp;quot;
+		FROM content
+		JOIN content_types ON content.content_type_id = content_types.id
+		WHERE content.id = $1`
+
+	var content Content
+	err = connection.Get(&amp;amp;content, query, &amp;quot;UUID-ID-HERE&amp;quot;)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	fmt.Printf(&amp;quot;Fetched content: %s of type %s\n&amp;quot;, content.Content, content.ContentType.Name)
+}
+
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;I hope this helps :)&lt;/p&gt;
+</description>
+    </item>
+    
+    <item>
+      <title>Install PHP7</title>
+      <link>http://redstalker.com/blog/2015/12/06/install-php7/</link>
+      <pubDate>Sun, 06 Dec 2015 14:24:50 -0500</pubDate>
+      
+      <guid>http://redstalker.com/blog/2015/12/06/install-php7/</guid>
+      <description>
+
+&lt;p&gt;&lt;a href=&#34;http://php.net/archive/2015.php#id2015-12-03-1&#34;&gt;PHP7 was released this month&lt;/a&gt;, exciting! So how do you get ahold of it?&lt;/p&gt;
+
+&lt;p&gt;There are a couple of options available depending on what operating system you are running.&lt;/p&gt;
+
+&lt;h2 id=&#34;automated-install&#34;&gt;Automated Install&lt;/h2&gt;
+
+&lt;h3 id=&#34;puphpet&#34;&gt;PuPHPet&lt;/h3&gt;
+
+&lt;p&gt;The easiest way to get going with php7 is to head over to &lt;a href=&#34;https://puphpet.com&#34;&gt;puphpet.com&lt;/a&gt; and configure a build.  Unfortunately at the time of this writing the only available operating system is Ubuntu 14.04.&lt;/p&gt;
+
+&lt;h2 id=&#34;manual&#34;&gt;Manual&lt;/h2&gt;
+
+&lt;p&gt;If you wish to install php7 yourself there are more options.&lt;/p&gt;
+
+&lt;h3 id=&#34;ubuntu&#34;&gt;Ubuntu&lt;/h3&gt;
+
+&lt;p&gt;Ondřej Surý has provided &lt;a href=&#34;https://launchpad.net/~ondrej/+archive/ubuntu/php-7.0&#34;&gt;a great PPA&lt;/a&gt; for ubuntu since php5, it&amp;rsquo;s easy to use and provides good default configurations.  At the time of this writing Mr. Surý&amp;rsquo;s PPA supports Ubuntu &amp;gt;= 14.04.&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-bash&#34;&gt;sudo apt-add-repository ppa:ondrej/php-7.0
+sudo apt-get update
+sudo apt-get install php7.0
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h3 id=&#34;centos&#34;&gt;CentOS&lt;/h3&gt;
+
+&lt;p&gt;With CentOS &amp;gt;= 6.5 there are a couple of additional places to find PHP7.&lt;/p&gt;
+
+&lt;h4 id=&#34;remi&#34;&gt;Remi&lt;/h4&gt;
+
+&lt;p&gt;PHP7 with extensions is available on the popular &lt;a href=&#34;http://rpms.famillecollet.com/&#34;&gt;remi yum repository&lt;/a&gt;.&lt;/p&gt;
+
+&lt;h5 id=&#34;example-for-centos-7&#34;&gt;Example for CentOS 7&lt;/h5&gt;
+
+&lt;pre&gt;&lt;code&gt;sudo rpm -Uvh http://rpms.famillecollet.com/enterprise/remi-release-7.rpm
+sudo yum install --enablerepo=remi --enablerepo=remi-php70 php
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h4 id=&#34;webtatic&#34;&gt;Webtatic&lt;/h4&gt;
+
+&lt;p&gt;&lt;a href=&#34;https://webtatic.com/packages/php70/&#34;&gt;Webtatic&lt;/a&gt; has PHP7 available for install for CentOS &amp;gt;= 6.7&lt;/p&gt;
+
+&lt;h5 id=&#34;example-for-centos-7-1&#34;&gt;Example for CentOS 7&lt;/h5&gt;
+
+&lt;pre&gt;&lt;code&gt;sudo rpm -Uvh https://mirror.webtatic.com/yum/el7/webtatic-release.rpm
+sudo yum install --enablerepo=remi --enablerepo=remi-php70 php
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h2 id=&#34;example-configuration&#34;&gt;Example Configuration&lt;/h2&gt;
+
+&lt;p&gt;The following example configurations setup php7 fpm, apache 2.4, and &lt;a href=&#34;http://lumen.laravel.com&#34;&gt;lumen&lt;/a&gt;.&lt;/p&gt;
+
+&lt;h4 id=&#34;install-php7&#34;&gt;Install PHP7&lt;/h4&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-bash&#34;&gt;sudo apt-add-repository ppa:ondrej/php-7.0
+sudo apt-get update
+sudo apt-get install php7.0-fpm php7.0-common php7.0-intl
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h4 id=&#34;composer&#34;&gt;Composer&lt;/h4&gt;
+
+&lt;p&gt;You need &lt;a href=&#34;https://getcomposer.org/download&#34;&gt;composer&lt;/a&gt; to get started.&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-bash&#34;&gt;curl -sS https://getcomposer.org/installer | sudo php -- --install-dir=/usr/local/bin --filename=composer
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h4 id=&#34;lumen&#34;&gt;Lumen&lt;/h4&gt;
+
+&lt;p&gt;Lumen is a &amp;ldquo;microframework&amp;rdquo; provided by the Laravel project.&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-bash&#34;&gt;composer create-project laravel/lumen /var/www/app --prefer-dist
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h4 id=&#34;php-fpm-pool&#34;&gt;php-fpm pool&lt;/h4&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-ini&#34;&gt;listen = 127.0.0.1:9000
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h4 id=&#34;apache-vhost&#34;&gt;Apache vhost&lt;/h4&gt;
+
+&lt;p&gt;Additional options and steps can be found &lt;a href=&#34;https://wiki.apache.org/httpd/PHP-FPM&#34;&gt;here&lt;/a&gt;.&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;&amp;lt;VirtualHost *:80&amp;gt;
+        ServerAdmin webmaster@localhost
+        DocumentRoot /var/www/app/public
+        ErrorLog ${APACHE_LOG_DIR}/error.log
+        CustomLog ${APACHE_LOG_DIR}/access.log combined
+        &amp;lt;Directory &amp;quot;/var/www/app/public&amp;quot;&amp;gt;
+                Order allow,deny
+                Allow from all
+                Require all granted
+        &amp;lt;/Directory&amp;gt;
+
+        ProxyPassMatch ^/(.*\.php(/.*)?)$ fcgi://127.0.0.1:9000/var/www/app/public/$1
+        DirectoryIndex /index.php index.php
+&amp;lt;/VirtualHost&amp;gt;
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h4 id=&#34;vagrantfile&#34;&gt;Vagrantfile&lt;/h4&gt;
+
+&lt;p&gt;This is a sample vagrantfile I used to do the above.&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-ruby&#34;&gt;Vagrant.configure(2) do |config|
+  config.vm.box = &amp;quot;ubuntu/trusty64&amp;quot;
+  config.vm.network &amp;quot;forwarded_port&amp;quot;, guest: 80, host: 5555
+  config.vm.network &amp;quot;private_network&amp;quot;, ip: &amp;quot;192.168.33.10&amp;quot;
+  config.vm.synced_folder &amp;quot;./app&amp;quot;, &amp;quot;/var/www/app&amp;quot;, type: &amp;quot;nfs&amp;quot;
+  config.vm.provider &amp;quot;virtualbox&amp;quot; do |vb|
+   vb.memory = &amp;quot;1024&amp;quot;
+  end
+end
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;I hope it helps :)&lt;/p&gt;
+</description>
+    </item>
+    
+    <item>
+      <title>Preparing Integers With Doctrine</title>
+      <link>http://redstalker.com/blog/2014/11/27/preparing-integers-with-doctrine/</link>
+      <pubDate>Thu, 27 Nov 2014 13:57:00 +0000</pubDate>
+      
+      <guid>http://redstalker.com/blog/2014/11/27/preparing-integers-with-doctrine/</guid>
+      <description>&lt;p&gt;I recently had an issue with binding an integer to a select statement with doctrine and postgresql.&lt;/p&gt;
+
+&lt;p&gt;Given the following:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;&amp;lt;?php
+    $sql = &#39;INSERT INTO tree (ancestor, descendant)
+            SELECT cta.ancestor, :descendant
+            FROM tree AS cta
+            WHERE cta.descendant = :ancestor
+            UNION ALL
+            SELECT :descendant, :descendant&#39;;
+
+    $statement = $connection-&amp;gt;prepare($sql);
+    $statement-&amp;gt;bindValue(&amp;quot;descendant&amp;quot;, (int) $rootNode, &#39;integer&#39;);
+    $statement-&amp;gt;bindValue(&amp;quot;ancestor&amp;quot;, (int) $ancestor, &#39;integer&#39;);
+    $statement-&amp;gt;execute();
+?&amp;gt;
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;I received the following error:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;/**
+    PHP Fatal error:  Uncaught exception &#39;PDOException&#39; with message &#39;SQLSTATE[42P08]: Ambiguous parameter: 7 ERROR:  inconsistent types deduced for parameter $1
+    LINE 2:                 SELECT cta.ancestor, $1
+                                                          ^
+    DETAIL:  integer versus text&#39; in /vagrant_data/vendor/doctrine/dbal/lib/Doctrine/DBAL/Driver/PDOStatement.php:91
+*/
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;The solution was to explicitly cast it as an integer like so ::integer&lt;/p&gt;
+
+&lt;p&gt;And here is the revised code:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;&amp;lt;?php
+    $sql = &#39;INSERT INTO tree (ancestor, descendant)
+            SELECT cta.ancestor, :descendant::integer
+            FROM tree AS cta
+            WHERE cta.descendant = :ancestor
+            UNION ALL
+            SELECT :descendant, :descendant&#39;;
+
+    $statement = $connection-&amp;gt;prepare($sql);
+    $statement-&amp;gt;bindValue(&amp;quot;descendant&amp;quot;, (int) $rootNode, &#39;integer&#39;);
+    $statement-&amp;gt;bindValue(&amp;quot;ancestor&amp;quot;, (int) $ancestor, &#39;integer&#39;);
+    $statement-&amp;gt;execute();
+?&amp;gt;
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;If there are errors or you have a suggestion send me a message @taio.&lt;/p&gt;
+</description>
+    </item>
+    
+    <item>
+      <title>Getting Started with Gorilla MUX</title>
+      <link>http://redstalker.com/blog/2014/04/19/getting-started-with-gorilla-mux/</link>
+      <pubDate>Sat, 19 Apr 2014 16:05:12 +0000</pubDate>
+      
+      <guid>http://redstalker.com/blog/2014/04/19/getting-started-with-gorilla-mux/</guid>
+      <description>
+
+&lt;p&gt;This is going to be short and sweet.  I have been looking at getting into Go for awhile but lacked incentive.  That has, as of a week ago, changed and it&amp;rsquo;s full speed ahead.&lt;/p&gt;
+
+&lt;p&gt;For this I will be using &lt;a href=&#34;http://www.gorillatoolkit.org/pkg/mux&#34;&gt;Gorilla MUX&lt;/a&gt;.  If you haven&amp;rsquo;t taken a look at the Gorilla toolkit yet I highly recommend it.  I really enjoy using it, the use as individual components really resonates with me and my style of coding.&lt;/p&gt;
+
+&lt;h3 id=&#34;setup&#34;&gt;Setup&lt;/h3&gt;
+
+&lt;p&gt;Setup for this is pretty fast, &lt;code&gt;go get github.com/gorilla/mux&lt;/code&gt;&lt;/p&gt;
+
+&lt;h3 id=&#34;the-meat-and-potatos&#34;&gt;The Meat and Potatos&lt;/h3&gt;
+
+&lt;p&gt;The &lt;code&gt;main.go&lt;/code&gt; for this is pretty simple, but if you haven&amp;rsquo;t used &lt;a href=&#34;http://golang.org/pkg/net/http/&#34;&gt;net/http&lt;/a&gt; from the Golang standard library you might be scratching your head trying to figure out what&amp;rsquo;s going on.&lt;/p&gt;
+
+&lt;h5 id=&#34;example-main-go&#34;&gt;Example main.go&lt;/h5&gt;
+
+&lt;pre&gt;&lt;code&gt;package main
+
+import (
+    &amp;quot;fmt&amp;quot;
+    &amp;quot;github.com/gorilla/mux&amp;quot;
+    &amp;quot;net/http&amp;quot;
+)
+
+func ArticleHandler(w http.ResponseWriter, r *http.Request) {
+    fmt.Println(&amp;quot;Article URI&amp;quot;)
+}
+
+func main() {
+    // Create a new Router instance
+    router := mux.NewRouter()
+
+    // Add the URI /article to be handled by the ArticleHandler method
+    router.HandleFunc(&amp;quot;/article&amp;quot;, ArticleHandler)
+
+    // Add the URI / to be handled by a closure
+    router.HandleFunc(&amp;quot;/&amp;quot;, func(w http.ResponseWriter, r *http.Request) {
+        fmt.Println(&amp;quot;Root URI&amp;quot;)
+    })
+
+    // Pass our router to net/http
+    http.Handle(&amp;quot;/&amp;quot;, router)
+
+    // Listen and serve on localhost:8080
+    http.ListenAndServe(&amp;quot;:8080&amp;quot;, nil)
+}
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Alright, that&amp;rsquo;s cool so what do we do with it?&lt;/p&gt;
+
+&lt;p&gt;Well, sounds like a great way build a back end service and a separate front end application using something like AngularJS.&lt;/p&gt;
+
+&lt;p&gt;Next article I will go into more detail.  Until then, you can check out the code for this series here: &lt;a href=&#34;https://github.com/taion809/go-helloblog&#34;&gt;HelloBlog&lt;/a&gt;&lt;/p&gt;
+
+&lt;p&gt;As always, if there are errors or you have a suggestion send me a message.&lt;/p&gt;
+</description>
+    </item>
+    
+    <item>
+      <title>Docker: Containing Madness</title>
+      <link>http://redstalker.com/blog/2013/11/09/docker-containing-madness/</link>
+      <pubDate>Sat, 09 Nov 2013 01:31:43 +0000</pubDate>
+      
+      <guid>http://redstalker.com/blog/2013/11/09/docker-containing-madness/</guid>
+      <description>
+
+&lt;p&gt;Recently we had one of our important clients come to us with a node.js application they needed updated.  I&amp;rsquo;m not sure of the circumstances surrounding this application but it looked and felt like a ball of spaghetti was thrown in my face.  I punted the modifications to another developer in favor of doing the deployment with docker and supervisord.&lt;/p&gt;
+
+&lt;h3 id=&#34;the-problem&#34;&gt;The Problem&lt;/h3&gt;
+
+&lt;p&gt;This node.js application has many assumptions about libraries and file locations that make me cringe, for example it simply won&amp;rsquo;t work unless packages are installed globally &lt;strong&gt;and&lt;/strong&gt; locally.&lt;/p&gt;
+
+&lt;h3 id=&#34;the-solution&#34;&gt;The Solution&lt;/h3&gt;
+
+&lt;p&gt;Build a docker image containing the application so that it could be deployed without touching anything outside of its container, think like a chroot.&lt;/p&gt;
+
+&lt;h3 id=&#34;let-s-do-it&#34;&gt;Let&amp;rsquo;s Do It!&lt;/h3&gt;
+
+&lt;p&gt;The application we will be using can be found in my &lt;a href=&#34;https://github.com/taion809/hello-node&#34;&gt;github repository&lt;/a&gt;.&lt;/p&gt;
+
+&lt;p&gt;The following Dockerfile will be used to build our image.  We are using Dockerfiles because it  makes building images simple, versioned, and easily distributable.&lt;/p&gt;
+
+&lt;p&gt;Our Dockerfile
+{% gist 7380804 Dockerfile %}&lt;/p&gt;
+
+&lt;p&gt;In order to build our image from this Dockerfile we will execute the following command.&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;sudo docker build -t=&#39;johnsn/webapp&#39; . 
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;You should see output like the following&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;# Excerpt
+Step 14 : ENTRYPOINT [&amp;quot;/usr/bin/nodejs&amp;quot;]
+ ---&amp;gt; Running in 0db9a210f33c
+ ---&amp;gt; a82cdefae38d
+Step 15 : CMD [&amp;quot;server.js&amp;quot;]
+ ---&amp;gt; Running in c11ec2908881
+ ---&amp;gt; 439913416e8f
+Successfully built 439913416e8f
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;You can now make the choice to push your image to the docker.io registry, a private registry, or not push at all.  If you chose to push it to a registry you will need to use the docker push command.&lt;/p&gt;
+
+&lt;p&gt;From here use docker run to create and start a container so we can verify the build worked.&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;sudo docker run -d -p 5000:80 johnsn/webapp
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;You should receive output like the following, we used the -p flag to map our host port 5000 to the container port 80 which we exposed in the Dockerfile&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;# Your container ID will be returned
+3f1a9b9ac4e4
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Verify with curl&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;curl -v localhost:5000
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;At this point we have a web application running inside a docker container we can serve on port 5000.  But, we have a problem, after a reboot we need to manually run the docker run command to bring up our web app again.  Let&amp;rsquo;s solve that problem with supervisord.&lt;/p&gt;
+
+&lt;p&gt;Supervisord is really simple and convenient which is why I am using it over something like daemontools.&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;[program:webapp]
+command=/usr/bin/docker run -p 5000:80 johnsn/webapp
+autostart=true
+autorestart=true
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Notice we do not use the -d flag, this is because Supervisord will run our container as a daemon.&lt;/p&gt;
+
+&lt;p&gt;Now restart the supervisord service with &lt;code&gt;service&lt;/code&gt; or using &lt;code&gt;supervisorctl&lt;/code&gt;&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;# sudo service supervisor restart does not work :\
+
+sudo service supervisor stop
+sudo service supervisor start
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Verify&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;ps aux | grep webapp
+
+# root      8964  0.0  0.7 186948  3600 ?        Sl   03:54   0:00 /usr/bin/docker run -p 5000:80 johnsn/webapp
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;!-- Logging options here... sometime. --&gt;
+
+&lt;p&gt;Alright, so let&amp;rsquo;s setup nginx properly so we can have webapp.com instead of webapp.com:5000&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;## HTTP server.
+server {
+    listen 80; # IPv4
+
+    server_name webapp.com;
+
+    ## Access and error logs.
+    access_log /var/log/nginx/webapp.com_access.log;
+    error_log /var/log/nginx/webapp.com_error.log;
+
+    location / {
+        proxy_set_header X-Forwarded-Host $host;
+        proxy_set_header X-Forwarded-Server $host;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_pass http://127.0.0.1:5000;
+    }
+
+} # HTTP server
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Restart the nginx and verify!&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;curl -v webapp.com
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;That is it, 30 minutes later we have an immutable linux container for our web app that we can then deploy to a single server or many servers.&lt;/p&gt;
+
+&lt;p&gt;Please let me know if you see errors, have corrections, or know a better way.&lt;/p&gt;
+
+&lt;h3 id=&#34;references&#34;&gt;References&lt;/h3&gt;
+
+&lt;ul&gt;
+&lt;li&gt;&lt;a href=&#34;http://docker.io&#34;&gt;Docker&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;http://supervisord.org/&#34;&gt;Supervisord&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+</description>
+    </item>
+    
+    <item>
+      <title>Splitting Mysql Dumps</title>
+      <link>http://redstalker.com/blog/2013/09/21/splitting-mysql-dumps/</link>
+      <pubDate>Sat, 21 Sep 2013 10:27:15 +0000</pubDate>
+      
+      <guid>http://redstalker.com/blog/2013/09/21/splitting-mysql-dumps/</guid>
+      <description>
+
+&lt;p&gt;The version of phpMyAdmin on Rackspace Cloud Sites has a hard limit of 16Mb for imported SQL. I recently had to migrate a database that was over 500Mb.&lt;/p&gt;
+
+&lt;p&gt;The solution was simple but tedious, export the database schema first and import it in phpMyAdmin then separate the data into many separate files below 16Mb.&lt;/p&gt;
+
+&lt;p&gt;I came up with a lot of ridiculous solutions using python, perl, combinations of science and voodoo until I realized the solution already existed, Linux. Utilizing the split and sed we can split the database dump into many small parts.&lt;/p&gt;
+
+&lt;h4 id=&#34;split&#34;&gt;Split&lt;/h4&gt;
+
+&lt;p&gt;In order to split the file effectively it will take a little experimentation (this is really fast though so it shouldn&amp;rsquo;t take long to figure out).&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;split -l 40000 big_giant_db.dump
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Will split a file into individual files with 40,000 lines each. Splitting this way will yield files of varying sizes and depending on the data you may still have files over 16Mb which will need to be dealt with in the same way (kind of like recursion, no?).&lt;/p&gt;
+
+&lt;h4 id=&#34;processing&#34;&gt;Processing&lt;/h4&gt;
+
+&lt;p&gt;I needed to disable foreign key constraints and wrap each file in a transaction but editing 90 individual files is a pain in the butt, so let&amp;rsquo;s skip that and do it with sed!&lt;/p&gt;
+
+&lt;p&gt;The following command will build a list of files starting with &amp;lsquo;x&amp;rsquo;, which is the output from split, and run sed against them to place text in the beginning of the file.&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;find ./x* -type f -print0 | while IFS= read -r -d &#39;&#39; filename;\
+do sed -i &#39;1s/^/\n\nSET FOREIGN_KEY_CHECKS=0;\nSET SQL_MODE = \&amp;quot;NO_AUTO_VALUE_ON_ZERO\&amp;quot;;\nSET AUTOCOMMIT = 0;\nSET time_zone = \&amp;quot;+00:00\&amp;quot;;\nSTART TRANSACTION;\n\n /&#39; $filename;\
+done
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Holy crap! You thought you had escaped your sed and perl nightmares, didn&amp;rsquo;t you?&lt;/p&gt;
+
+&lt;p&gt;The output will look something like this&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;SET FOREIGN_KEY_CHECKS=0;
+SET SQL_MODE = &amp;quot;NO_AUTO_VALUE_ON_ZERO&amp;quot;;
+SET AUTOCOMMIT = 0;
+SET time_zone = &amp;quot;+00:00&amp;quot;;
+START TRANSACTION;
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;To finish up we need to add the sql commit and re enable foreign key checks, so let&amp;rsquo;s get to it.&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;find ./x* -type f -print0 | while IFS= read -r -d &#39;&#39; filename;\
+do sed -i &#39;$s/$/\n\nCOMMIT;\nSET FOREIGN_KEY_CHECKS=1;\n\n /&#39; $filename;\
+done
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Like the command before, this will append text to the bottom of each file generated by the find command.&lt;/p&gt;
+
+&lt;p&gt;The output will look something like this&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;COMMIT;
+SET FOREIGN_KEY_CHECKS=1;
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;I hope this helped someone else, I apologize for formatting. If you know a better way to do this send me an email, twitter, comment, pull request, or smoke signal.&lt;/p&gt;
+
+&lt;h4 id=&#34;update&#34;&gt;Update&lt;/h4&gt;
+
+&lt;p&gt;So, had I read the damn Rackspace Cloud Sites KB in the first place I would have known that it is possible to import a database through a shell script&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;#!/bin/sh
+mysql -h host-u user -p&#39;password&#39; db_name &amp;lt; /path/to/backup.sql
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h4 id=&#34;references&#34;&gt;References&lt;/h4&gt;
+
+&lt;ol&gt;
+&lt;li&gt;&lt;a href=&#34;https://gist.github.com/taion809/6603818&#34;&gt;My gist&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;http://stackoverflow.com/questions/132902/how-do-i-split-the-output-from-mysqldump-into-smaller-files&#34;&gt;Stackoverflow&lt;/a&gt;&lt;/li&gt;
+&lt;/ol&gt;
+</description>
+    </item>
+    
+    <item>
+      <title>Jenkins CI Deployment with Bitbucket</title>
+      <link>http://redstalker.com/blog/2013/08/20/jenkins-ci-deployment-with-bitbucket/</link>
+      <pubDate>Tue, 20 Aug 2013 13:23:00 +0000</pubDate>
+      
+      <guid>http://redstalker.com/blog/2013/08/20/jenkins-ci-deployment-with-bitbucket/</guid>
+      <description>
+
+&lt;p&gt;I recently had someone ask me how to get started with Jenkins-CI, git, and ssh. My team is using it now for a CI-git deployment scheme but I was not the one to install or configure it. I didn&amp;rsquo;t really want to let down my friend with an &amp;ldquo;I don&amp;rsquo;t know, google it&amp;rdquo; answer so I spun up a new EC2 instance on Amazon AWS, installed Jenkins, pushed a new private repo to bitbucket, pulled and deployed that push on my Jenkins test server.&lt;/p&gt;
+
+&lt;p&gt;Setting up a t1.micro EC2 instance in Amazon AWS is simple enough so we can skip that.&lt;/p&gt;
+
+&lt;p&gt;Steps for installing Jenkins-CI can be found on its homepage so we can safely skip that as well. (Note: for this test I was not using jenkins behind a webserver proxy)&lt;/p&gt;
+
+&lt;p&gt;For the following steps I executed them as the jenkins user, you may do it another way if you wish, this is simply how I did it.&lt;/p&gt;
+
+&lt;h4 id=&#34;create-ssh-keypair&#34;&gt;Create SSH Keypair&lt;/h4&gt;
+
+&lt;p&gt;Creating an SSH keypair for use with jenkins and bitbucket:
+From the server:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;ssh-keygen -b 2048 -t rsa -c &amp;quot;Jenkins Deployment Keys&amp;quot; -f /output/path/privatekey
+chmod 0600 /output/path/privatekey
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Note: for my test I built the keys and configured git as the jenkins user&lt;/p&gt;
+
+&lt;p&gt;These sets of keys should be created with an empty password, for which you can simply press enter on the prompt.
+Configure SSH&lt;/p&gt;
+
+&lt;h4 id=&#34;create-a-config-to-map-the-host-and-identity-files&#34;&gt;Create a config to map the host and identity files&lt;/h4&gt;
+
+&lt;pre&gt;&lt;code&gt;vim /var/lib/jenkins/.ssh/config
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;My config file looks like this&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;Host jenkins-test-bitbucket
+    HostName bitbucket.org
+    User git
+    IdentityFile /var/lib/jenkins/.ssh/privatekey
+    IdentitiesOnly yes
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h4 id=&#34;add-ssh-public-key-to-bitbucket&#34;&gt;Add SSH public key to bitbucket&lt;/h4&gt;
+
+&lt;p&gt;At this point you have created your public and private keypair and created a config file to map the identity file to a host. Now, the public key needs to be added to your bitbucket account, the steps to accomplish this (should it change in the future) can be found on the bitbucket.org website but at the time of this writing you can&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;Login to bitbucket.org&lt;/li&gt;
+&lt;li&gt;Navigate to your repository&lt;/li&gt;
+&lt;li&gt;Select the Gear icon&lt;/li&gt;
+&lt;li&gt;Select Deployment Keys&lt;/li&gt;
+&lt;li&gt;Click Add Keys&lt;/li&gt;
+&lt;li&gt;Give it a witty label (or not)&lt;/li&gt;
+&lt;li&gt;Copy and paste your public key&lt;/li&gt;
+&lt;li&gt;Click Add Key&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h4 id=&#34;ssh-test-connection&#34;&gt;SSH Test Connection&lt;/h4&gt;
+
+&lt;p&gt;Now, back to your server, you will need to approve the host. The easiest way is to simply try to connect.&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;ssh jenkins-test-bitbucket
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;When prompted to continue the connection and add the host to your known hosts file type yes&lt;/p&gt;
+
+&lt;p&gt;If everything has gone smooth so far you should see the following output&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;jenkins@localhost:/var/lib/jenkins$ ssh jenkins-test-bitbucket
+PTY allocation request failed on channel 0
+conq: logged in as myusername.
+
+You can use git or hg to connect to Bitbucket. Shell access is disabled.
+Connection to bitbucket.org closed.
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Now that you have verified you can connect to bitbucket via ssh you need to install git, the jenkins git plugin, and configure the global settings for git.&lt;/p&gt;
+
+&lt;h4 id=&#34;configure-git&#34;&gt;Configure Git&lt;/h4&gt;
+
+&lt;p&gt;Git: on debian / ubuntu you can simply&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;apt-get install git
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Git Plugin: the Jenkins-CI website maintains this file, download it and place it in the JENKINS_HOME/plugins directory (mine is located /var/lib/jenkins/plugins)&lt;/p&gt;
+
+&lt;p&gt;Configure git: you need to set the username and email address for your user
+Example:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;git config --global user.email &amp;quot;jenkins@localhost&amp;quot;
+git config --global user.name &amp;quot;jenkins&amp;quot;
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Obviously replace those values with what you like.&lt;/p&gt;
+
+&lt;h4 id=&#34;configure-the-jenkins-job&#34;&gt;Configure the Jenkins Job&lt;/h4&gt;
+
+&lt;ul&gt;
+&lt;li&gt;Login to your Jenkins website&lt;/li&gt;
+&lt;li&gt;Create a new job&lt;/li&gt;
+&lt;li&gt;Configure the job&lt;/li&gt;
+&lt;li&gt;Select Git for your SCM option&lt;/li&gt;
+&lt;li&gt;The git repo address will be in a format such as this jenkins-test-bitbucket:username/path/to/repo.git&lt;/li&gt;
+&lt;li&gt;Continue configuring (for example, if you have a shell script or ant script to run after you pull the repo that runs unit tests)&lt;/li&gt;
+&lt;li&gt;Save&lt;/li&gt;
+&lt;li&gt;BUILD!&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;If everything was successful and the planets are aligned you should see your repo pull and if you configured any scripts they should run.&lt;/p&gt;
+
+&lt;p&gt;I&amp;rsquo;m sure there are others that have a better, faster way to accomplish this but this is simply how I did it and hopefully this helps someone.&lt;/p&gt;
+</description>
+    </item>
+    
+    <item>
+      <title>License</title>
+      <link>http://redstalker.com/license/</link>
+      <pubDate>Tue, 01 Jan 2013 00:00:00 +0000</pubDate>
+      
+      <guid>http://redstalker.com/license/</guid>
+      <description>
+
+&lt;h3 id=&#34;content-license&#34;&gt;Content license&lt;/h3&gt;
+
+&lt;p&gt;All non-code blog content is licensed under &lt;a href=&#34;http://creativecommons.org/licenses/by-nc-sa/3.0/&#34;&gt;Creative Commons BY-NC-SA&lt;/a&gt;.&lt;/p&gt;
+
+&lt;h3 id=&#34;code-license&#34;&gt;Code license&lt;/h3&gt;
+
+&lt;p&gt;All source code files and snippets found on this blog, unless otherwise explicitly noted, are licensed under the terms below.&lt;/p&gt;
+
+&lt;p&gt;Copyright &amp;copy; 2013, Nicholas Johns
+All rights reserved.&lt;/p&gt;
+
+&lt;p&gt;Redistribution and use in source and binary forms, with or without
+modification, are permitted provided that the following conditions are met:&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;&lt;p&gt;Redistributions of source code must retain the above copyright notice, this
+list of conditions and the following disclaimer.&lt;/p&gt;&lt;/li&gt;
+
+&lt;li&gt;&lt;p&gt;Redistributions in binary form must reproduce the above copyright notice,
+this list of conditions and the following disclaimer in the documentation
+and/or other materials provided with the distribution.&lt;/p&gt;&lt;/li&gt;
+
+&lt;li&gt;&lt;p&gt;Neither the name of Redstalker, nor the names of its
+contributors may be used to endorse or promote products derived from
+this software without specific prior written permission.&lt;/p&gt;&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS &amp;ldquo;AS IS&amp;rdquo;
+AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
+FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
+OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.&lt;/p&gt;
+</description>
+    </item>
+    
+  </channel>
+</rss>

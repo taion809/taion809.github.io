@@ -1,0 +1,138 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Php on Redstalker</title>
+    <link>http://redstalker.com/tags/php/</link>
+    <description>Recent content in Php on Redstalker</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en-us</language>
+    <copyright>Copyright (c) 2013 - 2015, Redstalker.com; All Rights Reserved.</copyright>
+    <lastBuildDate>Sun, 06 Dec 2015 14:24:50 -0500</lastBuildDate>
+    <atom:link href="http://redstalker.com/tags/php/index.xml" rel="self" type="application/rss+xml" />
+    
+    <item>
+      <title>Install PHP7</title>
+      <link>http://redstalker.com/blog/2015/12/06/install-php7/</link>
+      <pubDate>Sun, 06 Dec 2015 14:24:50 -0500</pubDate>
+      
+      <guid>http://redstalker.com/blog/2015/12/06/install-php7/</guid>
+      <description>
+
+&lt;p&gt;&lt;a href=&#34;http://php.net/archive/2015.php#id2015-12-03-1&#34;&gt;PHP7 was released this month&lt;/a&gt;, exciting! So how do you get ahold of it?&lt;/p&gt;
+
+&lt;p&gt;There are a couple of options available depending on what operating system you are running.&lt;/p&gt;
+
+&lt;h2 id=&#34;automated-install&#34;&gt;Automated Install&lt;/h2&gt;
+
+&lt;h3 id=&#34;puphpet&#34;&gt;PuPHPet&lt;/h3&gt;
+
+&lt;p&gt;The easiest way to get going with php7 is to head over to &lt;a href=&#34;https://puphpet.com&#34;&gt;puphpet.com&lt;/a&gt; and configure a build.  Unfortunately at the time of this writing the only available operating system is Ubuntu 14.04.&lt;/p&gt;
+
+&lt;h2 id=&#34;manual&#34;&gt;Manual&lt;/h2&gt;
+
+&lt;p&gt;If you wish to install php7 yourself there are more options.&lt;/p&gt;
+
+&lt;h3 id=&#34;ubuntu&#34;&gt;Ubuntu&lt;/h3&gt;
+
+&lt;p&gt;Ondřej Surý has provided &lt;a href=&#34;https://launchpad.net/~ondrej/+archive/ubuntu/php-7.0&#34;&gt;a great PPA&lt;/a&gt; for ubuntu since php5, it&amp;rsquo;s easy to use and provides good default configurations.  At the time of this writing Mr. Surý&amp;rsquo;s PPA supports Ubuntu &amp;gt;= 14.04.&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-bash&#34;&gt;sudo apt-add-repository ppa:ondrej/php-7.0
+sudo apt-get update
+sudo apt-get install php7.0
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h3 id=&#34;centos&#34;&gt;CentOS&lt;/h3&gt;
+
+&lt;p&gt;With CentOS &amp;gt;= 6.5 there are a couple of additional places to find PHP7.&lt;/p&gt;
+
+&lt;h4 id=&#34;remi&#34;&gt;Remi&lt;/h4&gt;
+
+&lt;p&gt;PHP7 with extensions is available on the popular &lt;a href=&#34;http://rpms.famillecollet.com/&#34;&gt;remi yum repository&lt;/a&gt;.&lt;/p&gt;
+
+&lt;h5 id=&#34;example-for-centos-7&#34;&gt;Example for CentOS 7&lt;/h5&gt;
+
+&lt;pre&gt;&lt;code&gt;sudo rpm -Uvh http://rpms.famillecollet.com/enterprise/remi-release-7.rpm
+sudo yum install --enablerepo=remi --enablerepo=remi-php70 php
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h4 id=&#34;webtatic&#34;&gt;Webtatic&lt;/h4&gt;
+
+&lt;p&gt;&lt;a href=&#34;https://webtatic.com/packages/php70/&#34;&gt;Webtatic&lt;/a&gt; has PHP7 available for install for CentOS &amp;gt;= 6.7&lt;/p&gt;
+
+&lt;h5 id=&#34;example-for-centos-7-1&#34;&gt;Example for CentOS 7&lt;/h5&gt;
+
+&lt;pre&gt;&lt;code&gt;sudo rpm -Uvh https://mirror.webtatic.com/yum/el7/webtatic-release.rpm
+sudo yum install --enablerepo=remi --enablerepo=remi-php70 php
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h2 id=&#34;example-configuration&#34;&gt;Example Configuration&lt;/h2&gt;
+
+&lt;p&gt;The following example configurations setup php7 fpm, apache 2.4, and &lt;a href=&#34;http://lumen.laravel.com&#34;&gt;lumen&lt;/a&gt;.&lt;/p&gt;
+
+&lt;h4 id=&#34;install-php7&#34;&gt;Install PHP7&lt;/h4&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-bash&#34;&gt;sudo apt-add-repository ppa:ondrej/php-7.0
+sudo apt-get update
+sudo apt-get install php7.0-fpm php7.0-common php7.0-intl
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h4 id=&#34;composer&#34;&gt;Composer&lt;/h4&gt;
+
+&lt;p&gt;You need &lt;a href=&#34;https://getcomposer.org/download&#34;&gt;composer&lt;/a&gt; to get started.&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-bash&#34;&gt;curl -sS https://getcomposer.org/installer | sudo php -- --install-dir=/usr/local/bin --filename=composer
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h4 id=&#34;lumen&#34;&gt;Lumen&lt;/h4&gt;
+
+&lt;p&gt;Lumen is a &amp;ldquo;microframework&amp;rdquo; provided by the Laravel project.&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-bash&#34;&gt;composer create-project laravel/lumen /var/www/app --prefer-dist
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h4 id=&#34;php-fpm-pool&#34;&gt;php-fpm pool&lt;/h4&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-ini&#34;&gt;listen = 127.0.0.1:9000
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h4 id=&#34;apache-vhost&#34;&gt;Apache vhost&lt;/h4&gt;
+
+&lt;p&gt;Additional options and steps can be found &lt;a href=&#34;https://wiki.apache.org/httpd/PHP-FPM&#34;&gt;here&lt;/a&gt;.&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;&amp;lt;VirtualHost *:80&amp;gt;
+        ServerAdmin webmaster@localhost
+        DocumentRoot /var/www/app/public
+        ErrorLog ${APACHE_LOG_DIR}/error.log
+        CustomLog ${APACHE_LOG_DIR}/access.log combined
+        &amp;lt;Directory &amp;quot;/var/www/app/public&amp;quot;&amp;gt;
+                Order allow,deny
+                Allow from all
+                Require all granted
+        &amp;lt;/Directory&amp;gt;
+
+        ProxyPassMatch ^/(.*\.php(/.*)?)$ fcgi://127.0.0.1:9000/var/www/app/public/$1
+        DirectoryIndex /index.php index.php
+&amp;lt;/VirtualHost&amp;gt;
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h4 id=&#34;vagrantfile&#34;&gt;Vagrantfile&lt;/h4&gt;
+
+&lt;p&gt;This is a sample vagrantfile I used to do the above.&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-ruby&#34;&gt;Vagrant.configure(2) do |config|
+  config.vm.box = &amp;quot;ubuntu/trusty64&amp;quot;
+  config.vm.network &amp;quot;forwarded_port&amp;quot;, guest: 80, host: 5555
+  config.vm.network &amp;quot;private_network&amp;quot;, ip: &amp;quot;192.168.33.10&amp;quot;
+  config.vm.synced_folder &amp;quot;./app&amp;quot;, &amp;quot;/var/www/app&amp;quot;, type: &amp;quot;nfs&amp;quot;
+  config.vm.provider &amp;quot;virtualbox&amp;quot; do |vb|
+   vb.memory = &amp;quot;1024&amp;quot;
+  end
+end
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;I hope it helps :)&lt;/p&gt;
+</description>
+    </item>
+    
+  </channel>
+</rss>

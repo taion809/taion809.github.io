@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="en">
+
+  <head>
+  <meta charset="utf-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+
+  <title>basic sqlx relation scanning</title>
+
+  <meta name="author" content="Nicholas J" />
+  
+  
+  <meta name="description" content="Really basic relationship scanning with jmoiron/sqlx, I&#39;d rather not forget.">
+  
+
+  <meta name="generator" content="Hugo 0.16" />
+
+  <link rel="alternate" href="http://redstalker.com/index.xml" type="application/rss+xml" title="Redstalker">
+
+  <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/font-awesome/4.5.0/css/font-awesome.min.css" />
+  <link rel="stylesheet" href="http://redstalker.com/css/bootstrap.min.css" />
+  <link rel="stylesheet" href="http://redstalker.com/css/main.css" />
+  <link rel="stylesheet" href="//fonts.googleapis.com/css?family=Lora:400,700,400italic,700italic" />
+  <link rel="stylesheet" href="//fonts.googleapis.com/css?family=Open+Sans:300italic,400italic,600italic,700italic,800italic,400,300,600,700,800" />
+  <link rel="stylesheet" href="http://redstalker.com/css/pygment_highlights.css" />
+  
+  
+  <meta property="og:title" content="basic sqlx relation scanning" />
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="/" />
+  <meta property="og:image" content="" />
+  
+</head>
+
+
+  <body>
+
+    <nav class="navbar navbar-default navbar-fixed-top navbar-custom">
+  <div class="container-fluid">
+    <div class="navbar-header">
+      <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#main-navbar">
+        <span class="sr-only">Toggle navigation</span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+      <a class="navbar-brand" href="http://redstalker.com/">Redstalker</a>
+    </div>
+
+    <div class="collapse navbar-collapse" id="main-navbar">
+      <ul class="nav navbar-nav navbar-right">
+      
+      </ul>
+    </div>
+
+	<div class="avatar-container">
+	  <div class="avatar-img-border">
+      
+	  </div>
+	</div>
+
+  </div>
+</nav>
+
+
+    <div role="main" class="container main-content">
+
+      
+        
+
+
+
+
+
+<header class="header-section ">
+
+<div class="intro-header no-img">
+  <div class="container">
+    <div class="row">
+      <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+        <div class="post-heading">
+          <h1>basic sqlx relation scanning</h1>
+      
+      
+      
+      <span class="post-meta">Posted on December 7, 2015</span>
+      
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+</header>
+
+
+
+
+<div class="container">
+  <div class="row">
+    <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+      <article role="main" class="blog-post">
+          <p>Very quick, I wanted to use <code>Get</code> with a query that contained other tables.  The documentation does not have a lot of examples so here we go.</p>
+
+<p>Given the following database schema</p>
+
+<pre><code class="language-sql">CREATE EXTENSION pgcrypto;
+
+CREATE TABLE content_types (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    name VARCHAR(255),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    deleted_at TIMESTAMP DEFAULT NULL
+);
+
+CREATE TABLE content (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    content_type_id UUID REFERENCES content_types(id) ON DELETE CASCADE ON UPDATE CASCADE,
+    content TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    deleted_at TIMESTAMP DEFAULT NULL
+)
+</code></pre>
+
+<p>I want to query and return a content row with its content_type, here is the struct I want to return.</p>
+
+<pre><code class="language-go">package main
+
+import (
+	&quot;fmt&quot;
+	&quot;github.com/jmoiron/sqlx&quot;
+	_ &quot;github.com/lib/pq&quot;
+	&quot;log&quot;
+	&quot;time&quot;
+)
+
+type ContentType struct {
+	Id        string     `db:&quot;id&quot;`
+	Name      string     `db:&quot;name&quot;`
+	CreatedAt *time.Time `db:&quot;created_at&quot;`
+	UpdatedAt *time.Time `db:&quot;updated_at&quot;`
+	DeletedAt *time.Time `db:&quot;deleted_at&quot;`
+}
+
+type Content struct {
+	Id          string     `db:&quot;id&quot;`
+	Content     string     `db:&quot;content&quot;`
+	CreatedAt   *time.Time `db:&quot;created_at&quot;`
+	UpdatedAt   *time.Time `db:&quot;updated_at&quot;`
+	DeletedAt   *time.Time `db:&quot;deleted_at&quot;`
+	ContentType `db:&quot;content_type&quot;`
+}
+
+func main() {
+	connection, err := sqlx.Connect(&quot;postgres&quot;, &quot;postgres://user:pass@localhost:5432/database&quot;)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	defer connection.Close()
+
+	query := `
+		SELECT content.*,
+			   content_types.id AS &quot;content_type.id&quot;,
+			   content_types.name AS &quot;content_type.name&quot;,
+			   content_types.created_at AS &quot;content_type.created_at&quot;,
+			   content_types.updated_at AS &quot;content_type.updated_at&quot;
+		FROM content
+		JOIN content_types ON content.content_type_id = content_types.id
+		WHERE content.id = $1`
+
+	var content Content
+	err = connection.Get(&amp;content, query, &quot;UUID-ID-HERE&quot;)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	fmt.Printf(&quot;Fetched content: %s of type %s\n&quot;, content.Content, content.ContentType.Name)
+}
+
+</code></pre>
+
+<p>I hope this helps :)</p>
+
+      </article>
+
+      <ul class="pager blog-pager">
+        
+        <li class="previous">
+          <a href="http://redstalker.com/blog/2015/12/06/install-php7/" data-toggle="tooltip" data-placement="top" title="Install PHP7">&larr; Previous Post</a>
+        </li>
+        
+        
+      </ul>
+
+      
+      <div class="disqus-comments">
+        <div id="disqus_thread"></div>
+<script type="text/javascript">
+    var disqus_shortname = 'redstalker';
+    var disqus_identifier = 'http:\/\/redstalker.com\/blog\/2015\/12\/07\/basic-sqlx-relation-scanning\/';
+    var disqus_title = 'basic sqlx relation scanning';
+    var disqus_url = 'http:\/\/redstalker.com\/blog\/2015\/12\/07\/basic-sqlx-relation-scanning\/';
+
+    (function() {
+        var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+        dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+        (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    })();
+</script>
+<noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+<a href="http://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+      </div>
+      
+
+    </div>
+  </div>
+</div>
+
+      
+
+    </div>
+
+    <footer>
+  <div class="container beautiful-jekyll-footer">
+    <div class="row">
+      <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+        <ul class="list-inline text-center footer-links">
+          
+          
+          <li>
+            <a href="https://github.com/taion809" title="GitHub">
+              <span class="fa-stack fa-lg">
+                <i class="fa fa-circle fa-stack-2x"></i>
+                <i class="fa fa-github fa-stack-1x fa-inverse"></i>
+              </span>
+            </a>
+          </li>
+          
+		      
+          <li>
+            <a href="https://twitter.com/taion809" title="Twitter">
+              <span class="fa-stack fa-lg">
+                <i class="fa fa-circle fa-stack-2x"></i>
+                <i class="fa fa-twitter fa-stack-1x fa-inverse"></i>
+              </span>
+            </a>
+          </li>
+          
+		      
+		      
+	    	  
+          
+          
+
+    		  <li>
+      			<a href="http://redstalker.com/index.xml" title="RSS">
+      			  <span class="fa-stack fa-lg">
+        				<i class="fa fa-circle fa-stack-2x"></i>
+        				<i class="fa fa-rss fa-stack-1x fa-inverse"></i>
+      			  </span>
+      			</a>
+    		  </li>		
+
+        </ul>
+        <p class="copyright text-muted">
+    		  Nicholas J
+    		  &nbsp;&bull;&nbsp;
+    		  2015
+    		  
+    		  
+    		  &nbsp;&bull;&nbsp;
+    		  <a href="http://redstalker.com/">Redstalker</a>
+    		  
+  	    </p>
+  	        
+    		<p class="theme-by text-muted">
+    		  Theme by
+    		  <a href="http://deanattali.com/beautiful-jekyll/">beautiful-jekyll</a>
+    		</p>
+      </div>
+    </div>
+  </div>
+</footer>
+
+<script src="http://redstalker.com/js/jquery-1.11.2.min.js"></script>
+<script src="http://redstalker.com/js/bootstrap.min.js"></script>
+<script src="http://redstalker.com/js/main.js"></script>
+
+
+
+  </body>
+</html>

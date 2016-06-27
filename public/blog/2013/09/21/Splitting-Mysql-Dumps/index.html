@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us">
+<head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+  <title>Splitting Mysql Dumps &middot; Nicholas J</title>
+
+  
+  <link rel="stylesheet" href="http://localhost:1313/css/poole.css">
+  <link rel="stylesheet" href="http://localhost:1313/css/hyde.css">
+  <link rel="stylesheet" href="http://localhost:1313/css/poole-overrides.css">
+  <link rel="stylesheet" href="http://localhost:1313/css/hyde-overrides.css">
+  <link rel="stylesheet" href="http://localhost:1313/css/hyde-x.css">
+  <link rel="stylesheet" href="http://localhost:1313/css/highlight/sunburst.css">
+  <link rel="stylesheet" href="http://fonts.googleapis.com/css?family=PT+Sans:400,400italic,700|Abril+Fatface">
+
+  
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/apple-touch-icon-144-precomposed.png">
+  <link href="/favicon.png" rel="icon">
+
+  
+  <link href="" rel="alternate" type="application/rss+xml" title="Redstalker &middot; Nicholas J" />
+
+  <meta name="description" content="Setting up Jenkins and Bitbucket for fun and adventure.">
+  <meta name="keywords" content="nicholas johns,home,website,blog,golang,docker,php">
+  
+</head>
+<body class="theme-base-08">
+<div class="sidebar">
+  <div class="container sidebar-sticky">
+    <div class="sidebar-about">
+      <img src="http://www.gravatar.com/avatar/dc6e8fcb5d2bf3a94b850f295b4102c6?s=200" alt="gravatar">
+      <h1>Nicholas J</h1>
+      <p class="lead">Another random programmer&#39;s blog</p>
+    </div>
+
+    <ul class="sidebar-nav">
+      <li class="sidebar-nav-item"><a href="http://localhost:1313/">Blog</a></li>
+      
+    </ul>
+
+    <ul class="sidebar-nav">
+      <li class="sidebar-nav-item"><a href="https://github.com/taion809">GitHub</a></li>
+      
+      
+      
+      <li class="sidebar-nav-item"><a href="https://twitter.com/taion809">Twitter</a></li>
+    </ul>
+
+    <p>Copyright &copy; 2015 <a href="http://localhost:1313/license">License</a><br/>
+       Powered by <a href="http://hugo.spf13.com">Hugo</a> and <a href="https://github.com/zyro/hyde-x">Hyde-X</a></p>
+  </div>
+</div>
+
+<div class="content container">
+  <div class="post">
+    <h1>Splitting Mysql Dumps</h1>
+    <span class="post-date">Sep 21, 2013 &middot; 3 minute read &middot; <a href="http://localhost:1313/blog/2013/09/21/Splitting-Mysql-Dumps/#disqus_thread">Comments</a>
+    
+    <br/>
+    
+    <a class="label" href="http://localhost:1313/categories/Development">Development</a>
+    </span>
+    
+
+<p>The version of phpMyAdmin on Rackspace Cloud Sites has a hard limit of 16Mb for imported SQL. I recently had to migrate a database that was over 500Mb.</p>
+
+<p>The solution was simple but tedious, export the database schema first and import it in phpMyAdmin then separate the data into many separate files below 16Mb.</p>
+
+<p>I came up with a lot of ridiculous solutions using python, perl, combinations of science and voodoo until I realized the solution already existed, Linux. Utilizing the split and sed we can split the database dump into many small parts.</p>
+
+<h4 id="toc_0">Split</h4>
+
+<p>In order to split the file effectively it will take a little experimentation (this is really fast though so it shouldn&rsquo;t take long to figure out).</p>
+
+<pre><code>split -l 40000 big_giant_db.dump
+</code></pre>
+
+<p>Will split a file into individual files with 40,000 lines each. Splitting this way will yield files of varying sizes and depending on the data you may still have files over 16Mb which will need to be dealt with in the same way (kind of like recursion, no?).</p>
+
+<h4 id="toc_1">Processing</h4>
+
+<p>I needed to disable foreign key constraints and wrap each file in a transaction but editing 90 individual files is a pain in the butt, so let&rsquo;s skip that and do it with sed!</p>
+
+<p>The following command will build a list of files starting with &lsquo;x&rsquo;, which is the output from split, and run sed against them to place text in the beginning of the file.</p>
+
+<pre><code>find ./x* -type f -print0 | while IFS= read -r -d '' filename;\
+do sed -i '1s/^/\n\nSET FOREIGN_KEY_CHECKS=0;\nSET SQL_MODE = \&quot;NO_AUTO_VALUE_ON_ZERO\&quot;;\nSET AUTOCOMMIT = 0;\nSET time_zone = \&quot;+00:00\&quot;;\nSTART TRANSACTION;\n\n /' $filename;\
+done
+</code></pre>
+
+<p>Holy crap! You thought you had escaped your sed and perl nightmares, didn&rsquo;t you?</p>
+
+<p>The output will look something like this</p>
+
+<pre><code>SET FOREIGN_KEY_CHECKS=0;
+SET SQL_MODE = &quot;NO_AUTO_VALUE_ON_ZERO&quot;;
+SET AUTOCOMMIT = 0;
+SET time_zone = &quot;+00:00&quot;;
+START TRANSACTION;
+</code></pre>
+
+<p>To finish up we need to add the sql commit and re enable foreign key checks, so let&rsquo;s get to it.</p>
+
+<pre><code>find ./x* -type f -print0 | while IFS= read -r -d '' filename;\
+do sed -i '$s/$/\n\nCOMMIT;\nSET FOREIGN_KEY_CHECKS=1;\n\n /' $filename;\
+done
+</code></pre>
+
+<p>Like the command before, this will append text to the bottom of each file generated by the find command.</p>
+
+<p>The output will look something like this</p>
+
+<pre><code>COMMIT;
+SET FOREIGN_KEY_CHECKS=1;
+</code></pre>
+
+<p>I hope this helped someone else, I apologize for formatting. If you know a better way to do this send me an email, twitter, comment, pull request, or smoke signal.</p>
+
+<h4 id="toc_2">Update</h4>
+
+<p>So, had I read the damn Rackspace Cloud Sites KB in the first place I would have known that it is possible to import a database through a shell script</p>
+
+<pre><code>#!/bin/sh
+mysql -h host-u user -p'password' db_name &lt; /path/to/backup.sql
+</code></pre>
+
+<h4 id="toc_3">References</h4>
+
+<ol>
+<li><a href="https://gist.github.com/taion809/6603818">My gist</a></li>
+<li><a href="http://stackoverflow.com/questions/132902/how-do-i-split-the-output-from-mysqldump-into-smaller-files">Stackoverflow</a></li>
+</ol>
+
+  </div>
+  <div id="disqus_thread"></div>
+</div>
+
+
+<script type="text/javascript">
+var disqus_shortname = "redstalker";
+(function () {
+    var s = document.createElement('script'); s.async = true;
+    s.type = 'text/javascript';
+    s.src = '//' + disqus_shortname + '.disqus.com/count.js';
+    (document.getElementsByTagName('HEAD')[0] || document.getElementsByTagName('BODY')[0]).appendChild(s);
+}());
+</script>
+
+
+
+<script type="text/javascript">
+    var disqus_shortname = "redstalker";
+    (function() {
+        var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+        dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+        (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    })();
+</script>
+<noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+<a href="http://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+
+<script src="http://localhost:1313/js/highlight.pack.js"></script>
+<script>hljs.initHighlightingOnLoad();</script>
+
+<script>
+  var _gaq=[['_setAccount','UA-43022143-1'],['_trackPageview']];
+  (function(d,t){var g=d.createElement(t),s=d.getElementsByTagName(t)[0];
+  g.src=('https:'==location.protocol?'//ssl':'//www')+'.google-analytics.com/ga.js';
+  s.parentNode.insertBefore(g,s)}(document,'script'));
+</script>
+
+</body>
+</html>

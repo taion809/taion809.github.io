@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="en">
+
+  <head>
+  <meta charset="utf-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+
+  <title>Getting Started with Gorilla MUX</title>
+
+  <meta name="author" content="Nicholas J" />
+  
+  
+  <meta name="description" content="Quick intro to the Gorilla MUX package.">
+  
+
+  <meta name="generator" content="Hugo 0.16" />
+
+  <link rel="alternate" href="http://redstalker.com/index.xml" type="application/rss+xml" title="Redstalker">
+
+  <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/font-awesome/4.5.0/css/font-awesome.min.css" />
+  <link rel="stylesheet" href="http://redstalker.com/css/bootstrap.min.css" />
+  <link rel="stylesheet" href="http://redstalker.com/css/main.css" />
+  <link rel="stylesheet" href="//fonts.googleapis.com/css?family=Lora:400,700,400italic,700italic" />
+  <link rel="stylesheet" href="//fonts.googleapis.com/css?family=Open+Sans:300italic,400italic,600italic,700italic,800italic,400,300,600,700,800" />
+  <link rel="stylesheet" href="http://redstalker.com/css/pygment_highlights.css" />
+  
+  
+  <meta property="og:title" content="Getting Started with Gorilla MUX" />
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="/" />
+  <meta property="og:image" content="" />
+  
+</head>
+
+
+  <body>
+
+    <nav class="navbar navbar-default navbar-fixed-top navbar-custom">
+  <div class="container-fluid">
+    <div class="navbar-header">
+      <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#main-navbar">
+        <span class="sr-only">Toggle navigation</span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+      <a class="navbar-brand" href="http://redstalker.com/">Redstalker</a>
+    </div>
+
+    <div class="collapse navbar-collapse" id="main-navbar">
+      <ul class="nav navbar-nav navbar-right">
+      
+      </ul>
+    </div>
+
+	<div class="avatar-container">
+	  <div class="avatar-img-border">
+      
+	  </div>
+	</div>
+
+  </div>
+</nav>
+
+
+    <div role="main" class="container main-content">
+
+      
+        
+
+
+
+
+
+<header class="header-section ">
+
+<div class="intro-header no-img">
+  <div class="container">
+    <div class="row">
+      <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+        <div class="post-heading">
+          <h1>Getting Started with Gorilla MUX</h1>
+      
+      
+      
+      <span class="post-meta">Posted on April 19, 2014</span>
+      
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+</header>
+
+
+
+
+<div class="container">
+  <div class="row">
+    <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+      <article role="main" class="blog-post">
+          
+
+<p>This is going to be short and sweet.  I have been looking at getting into Go for awhile but lacked incentive.  That has, as of a week ago, changed and it&rsquo;s full speed ahead.</p>
+
+<p>For this I will be using <a href="http://www.gorillatoolkit.org/pkg/mux">Gorilla MUX</a>.  If you haven&rsquo;t taken a look at the Gorilla toolkit yet I highly recommend it.  I really enjoy using it, the use as individual components really resonates with me and my style of coding.</p>
+
+<h3 id="setup">Setup</h3>
+
+<p>Setup for this is pretty fast, <code>go get github.com/gorilla/mux</code></p>
+
+<h3 id="the-meat-and-potatos">The Meat and Potatos</h3>
+
+<p>The <code>main.go</code> for this is pretty simple, but if you haven&rsquo;t used <a href="http://golang.org/pkg/net/http/">net/http</a> from the Golang standard library you might be scratching your head trying to figure out what&rsquo;s going on.</p>
+
+<h5 id="example-main-go">Example main.go</h5>
+
+<pre><code>package main
+
+import (
+    &quot;fmt&quot;
+    &quot;github.com/gorilla/mux&quot;
+    &quot;net/http&quot;
+)
+
+func ArticleHandler(w http.ResponseWriter, r *http.Request) {
+    fmt.Println(&quot;Article URI&quot;)
+}
+
+func main() {
+    // Create a new Router instance
+    router := mux.NewRouter()
+
+    // Add the URI /article to be handled by the ArticleHandler method
+    router.HandleFunc(&quot;/article&quot;, ArticleHandler)
+
+    // Add the URI / to be handled by a closure
+    router.HandleFunc(&quot;/&quot;, func(w http.ResponseWriter, r *http.Request) {
+        fmt.Println(&quot;Root URI&quot;)
+    })
+
+    // Pass our router to net/http
+    http.Handle(&quot;/&quot;, router)
+
+    // Listen and serve on localhost:8080
+    http.ListenAndServe(&quot;:8080&quot;, nil)
+}
+</code></pre>
+
+<p>Alright, that&rsquo;s cool so what do we do with it?</p>
+
+<p>Well, sounds like a great way build a back end service and a separate front end application using something like AngularJS.</p>
+
+<p>Next article I will go into more detail.  Until then, you can check out the code for this series here: <a href="https://github.com/taion809/go-helloblog">HelloBlog</a></p>
+
+<p>As always, if there are errors or you have a suggestion send me a message.</p>
+
+      </article>
+
+      <ul class="pager blog-pager">
+        
+        <li class="previous">
+          <a href="http://redstalker.com/blog/2013/11/09/docker-containing-madness/" data-toggle="tooltip" data-placement="top" title="Docker: Containing Madness">&larr; Previous Post</a>
+        </li>
+        
+        
+        <li class="next">
+          <a href="http://redstalker.com/blog/2014/11/27/preparing-integers-with-doctrine/" data-toggle="tooltip" data-placement="top" title="Preparing Integers With Doctrine">Next Post &rarr;</a>
+        </li>
+        
+      </ul>
+
+      
+      <div class="disqus-comments">
+        <div id="disqus_thread"></div>
+<script type="text/javascript">
+    var disqus_shortname = 'redstalker';
+    var disqus_identifier = 'http:\/\/redstalker.com\/blog\/2014\/04\/19\/getting-started-with-gorilla-mux\/';
+    var disqus_title = 'Getting Started with Gorilla MUX';
+    var disqus_url = 'http:\/\/redstalker.com\/blog\/2014\/04\/19\/getting-started-with-gorilla-mux\/';
+
+    (function() {
+        var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+        dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+        (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    })();
+</script>
+<noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+<a href="http://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+      </div>
+      
+
+    </div>
+  </div>
+</div>
+
+      
+
+    </div>
+
+    <footer>
+  <div class="container beautiful-jekyll-footer">
+    <div class="row">
+      <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+        <ul class="list-inline text-center footer-links">
+          
+          
+          <li>
+            <a href="https://github.com/taion809" title="GitHub">
+              <span class="fa-stack fa-lg">
+                <i class="fa fa-circle fa-stack-2x"></i>
+                <i class="fa fa-github fa-stack-1x fa-inverse"></i>
+              </span>
+            </a>
+          </li>
+          
+		      
+          <li>
+            <a href="https://twitter.com/taion809" title="Twitter">
+              <span class="fa-stack fa-lg">
+                <i class="fa fa-circle fa-stack-2x"></i>
+                <i class="fa fa-twitter fa-stack-1x fa-inverse"></i>
+              </span>
+            </a>
+          </li>
+          
+		      
+		      
+	    	  
+          
+          
+
+    		  <li>
+      			<a href="http://redstalker.com/index.xml" title="RSS">
+      			  <span class="fa-stack fa-lg">
+        				<i class="fa fa-circle fa-stack-2x"></i>
+        				<i class="fa fa-rss fa-stack-1x fa-inverse"></i>
+      			  </span>
+      			</a>
+    		  </li>		
+
+        </ul>
+        <p class="copyright text-muted">
+    		  Nicholas J
+    		  &nbsp;&bull;&nbsp;
+    		  2015
+    		  
+    		  
+    		  &nbsp;&bull;&nbsp;
+    		  <a href="http://redstalker.com/">Redstalker</a>
+    		  
+  	    </p>
+  	        
+    		<p class="theme-by text-muted">
+    		  Theme by
+    		  <a href="http://deanattali.com/beautiful-jekyll/">beautiful-jekyll</a>
+    		</p>
+      </div>
+    </div>
+  </div>
+</footer>
+
+<script src="http://redstalker.com/js/jquery-1.11.2.min.js"></script>
+<script src="http://redstalker.com/js/bootstrap.min.js"></script>
+<script src="http://redstalker.com/js/main.js"></script>
+
+
+
+  </body>
+</html>

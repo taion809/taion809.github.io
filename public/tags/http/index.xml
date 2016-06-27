@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Http on Redstalker</title>
+    <link>http://redstalker.com/tags/http/</link>
+    <description>Recent content in Http on Redstalker</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en-us</language>
+    <copyright>Copyright (c) 2013 - 2015, Redstalker.com; All Rights Reserved.</copyright>
+    <lastBuildDate>Sat, 19 Apr 2014 16:05:12 +0000</lastBuildDate>
+    <atom:link href="http://redstalker.com/tags/http/index.xml" rel="self" type="application/rss+xml" />
+    
+    <item>
+      <title>Getting Started with Gorilla MUX</title>
+      <link>http://redstalker.com/blog/2014/04/19/getting-started-with-gorilla-mux/</link>
+      <pubDate>Sat, 19 Apr 2014 16:05:12 +0000</pubDate>
+      
+      <guid>http://redstalker.com/blog/2014/04/19/getting-started-with-gorilla-mux/</guid>
+      <description>
+
+&lt;p&gt;This is going to be short and sweet.  I have been looking at getting into Go for awhile but lacked incentive.  That has, as of a week ago, changed and it&amp;rsquo;s full speed ahead.&lt;/p&gt;
+
+&lt;p&gt;For this I will be using &lt;a href=&#34;http://www.gorillatoolkit.org/pkg/mux&#34;&gt;Gorilla MUX&lt;/a&gt;.  If you haven&amp;rsquo;t taken a look at the Gorilla toolkit yet I highly recommend it.  I really enjoy using it, the use as individual components really resonates with me and my style of coding.&lt;/p&gt;
+
+&lt;h3 id=&#34;setup&#34;&gt;Setup&lt;/h3&gt;
+
+&lt;p&gt;Setup for this is pretty fast, &lt;code&gt;go get github.com/gorilla/mux&lt;/code&gt;&lt;/p&gt;
+
+&lt;h3 id=&#34;the-meat-and-potatos&#34;&gt;The Meat and Potatos&lt;/h3&gt;
+
+&lt;p&gt;The &lt;code&gt;main.go&lt;/code&gt; for this is pretty simple, but if you haven&amp;rsquo;t used &lt;a href=&#34;http://golang.org/pkg/net/http/&#34;&gt;net/http&lt;/a&gt; from the Golang standard library you might be scratching your head trying to figure out what&amp;rsquo;s going on.&lt;/p&gt;
+
+&lt;h5 id=&#34;example-main-go&#34;&gt;Example main.go&lt;/h5&gt;
+
+&lt;pre&gt;&lt;code&gt;package main
+
+import (
+    &amp;quot;fmt&amp;quot;
+    &amp;quot;github.com/gorilla/mux&amp;quot;
+    &amp;quot;net/http&amp;quot;
+)
+
+func ArticleHandler(w http.ResponseWriter, r *http.Request) {
+    fmt.Println(&amp;quot;Article URI&amp;quot;)
+}
+
+func main() {
+    // Create a new Router instance
+    router := mux.NewRouter()
+
+    // Add the URI /article to be handled by the ArticleHandler method
+    router.HandleFunc(&amp;quot;/article&amp;quot;, ArticleHandler)
+
+    // Add the URI / to be handled by a closure
+    router.HandleFunc(&amp;quot;/&amp;quot;, func(w http.ResponseWriter, r *http.Request) {
+        fmt.Println(&amp;quot;Root URI&amp;quot;)
+    })
+
+    // Pass our router to net/http
+    http.Handle(&amp;quot;/&amp;quot;, router)
+
+    // Listen and serve on localhost:8080
+    http.ListenAndServe(&amp;quot;:8080&amp;quot;, nil)
+}
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Alright, that&amp;rsquo;s cool so what do we do with it?&lt;/p&gt;
+
+&lt;p&gt;Well, sounds like a great way build a back end service and a separate front end application using something like AngularJS.&lt;/p&gt;
+
+&lt;p&gt;Next article I will go into more detail.  Until then, you can check out the code for this series here: &lt;a href=&#34;https://github.com/taion809/go-helloblog&#34;&gt;HelloBlog&lt;/a&gt;&lt;/p&gt;
+
+&lt;p&gt;As always, if there are errors or you have a suggestion send me a message.&lt;/p&gt;
+</description>
+    </item>
+    
+  </channel>
+</rss>

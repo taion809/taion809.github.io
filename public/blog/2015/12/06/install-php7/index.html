@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="en">
+
+  <head>
+  <meta charset="utf-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+
+  <title>Install PHP7</title>
+
+  <meta name="author" content="Nicholas J" />
+  
+  
+  <meta name="description" content="PHP7 was released this month, exciting! So how do you get ahold of it?">
+  
+
+  <meta name="generator" content="Hugo 0.16" />
+
+  <link rel="alternate" href="http://redstalker.com/index.xml" type="application/rss+xml" title="Redstalker">
+
+  <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/font-awesome/4.5.0/css/font-awesome.min.css" />
+  <link rel="stylesheet" href="http://redstalker.com/css/bootstrap.min.css" />
+  <link rel="stylesheet" href="http://redstalker.com/css/main.css" />
+  <link rel="stylesheet" href="//fonts.googleapis.com/css?family=Lora:400,700,400italic,700italic" />
+  <link rel="stylesheet" href="//fonts.googleapis.com/css?family=Open+Sans:300italic,400italic,600italic,700italic,800italic,400,300,600,700,800" />
+  <link rel="stylesheet" href="http://redstalker.com/css/pygment_highlights.css" />
+  
+  
+  <meta property="og:title" content="Install PHP7" />
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="/" />
+  <meta property="og:image" content="" />
+  
+</head>
+
+
+  <body>
+
+    <nav class="navbar navbar-default navbar-fixed-top navbar-custom">
+  <div class="container-fluid">
+    <div class="navbar-header">
+      <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#main-navbar">
+        <span class="sr-only">Toggle navigation</span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+      <a class="navbar-brand" href="http://redstalker.com/">Redstalker</a>
+    </div>
+
+    <div class="collapse navbar-collapse" id="main-navbar">
+      <ul class="nav navbar-nav navbar-right">
+      
+      </ul>
+    </div>
+
+	<div class="avatar-container">
+	  <div class="avatar-img-border">
+      
+	  </div>
+	</div>
+
+  </div>
+</nav>
+
+
+    <div role="main" class="container main-content">
+
+      
+        
+
+
+
+
+
+<header class="header-section ">
+
+<div class="intro-header no-img">
+  <div class="container">
+    <div class="row">
+      <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+        <div class="post-heading">
+          <h1>Install PHP7</h1>
+      
+      
+      
+      <span class="post-meta">Posted on December 6, 2015</span>
+      
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+</header>
+
+
+
+
+<div class="container">
+  <div class="row">
+    <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+      <article role="main" class="blog-post">
+          
+
+<p><a href="http://php.net/archive/2015.php#id2015-12-03-1">PHP7 was released this month</a>, exciting! So how do you get ahold of it?</p>
+
+<p>There are a couple of options available depending on what operating system you are running.</p>
+
+<h2 id="automated-install">Automated Install</h2>
+
+<h3 id="puphpet">PuPHPet</h3>
+
+<p>The easiest way to get going with php7 is to head over to <a href="https://puphpet.com">puphpet.com</a> and configure a build.  Unfortunately at the time of this writing the only available operating system is Ubuntu 14.04.</p>
+
+<h2 id="manual">Manual</h2>
+
+<p>If you wish to install php7 yourself there are more options.</p>
+
+<h3 id="ubuntu">Ubuntu</h3>
+
+<p>Ondřej Surý has provided <a href="https://launchpad.net/~ondrej/+archive/ubuntu/php-7.0">a great PPA</a> for ubuntu since php5, it&rsquo;s easy to use and provides good default configurations.  At the time of this writing Mr. Surý&rsquo;s PPA supports Ubuntu &gt;= 14.04.</p>
+
+<pre><code class="language-bash">sudo apt-add-repository ppa:ondrej/php-7.0
+sudo apt-get update
+sudo apt-get install php7.0
+</code></pre>
+
+<h3 id="centos">CentOS</h3>
+
+<p>With CentOS &gt;= 6.5 there are a couple of additional places to find PHP7.</p>
+
+<h4 id="remi">Remi</h4>
+
+<p>PHP7 with extensions is available on the popular <a href="http://rpms.famillecollet.com/">remi yum repository</a>.</p>
+
+<h5 id="example-for-centos-7">Example for CentOS 7</h5>
+
+<pre><code>sudo rpm -Uvh http://rpms.famillecollet.com/enterprise/remi-release-7.rpm
+sudo yum install --enablerepo=remi --enablerepo=remi-php70 php
+</code></pre>
+
+<h4 id="webtatic">Webtatic</h4>
+
+<p><a href="https://webtatic.com/packages/php70/">Webtatic</a> has PHP7 available for install for CentOS &gt;= 6.7</p>
+
+<h5 id="example-for-centos-7-1">Example for CentOS 7</h5>
+
+<pre><code>sudo rpm -Uvh https://mirror.webtatic.com/yum/el7/webtatic-release.rpm
+sudo yum install --enablerepo=remi --enablerepo=remi-php70 php
+</code></pre>
+
+<h2 id="example-configuration">Example Configuration</h2>
+
+<p>The following example configurations setup php7 fpm, apache 2.4, and <a href="http://lumen.laravel.com">lumen</a>.</p>
+
+<h4 id="install-php7">Install PHP7</h4>
+
+<pre><code class="language-bash">sudo apt-add-repository ppa:ondrej/php-7.0
+sudo apt-get update
+sudo apt-get install php7.0-fpm php7.0-common php7.0-intl
+</code></pre>
+
+<h4 id="composer">Composer</h4>
+
+<p>You need <a href="https://getcomposer.org/download">composer</a> to get started.</p>
+
+<pre><code class="language-bash">curl -sS https://getcomposer.org/installer | sudo php -- --install-dir=/usr/local/bin --filename=composer
+</code></pre>
+
+<h4 id="lumen">Lumen</h4>
+
+<p>Lumen is a &ldquo;microframework&rdquo; provided by the Laravel project.</p>
+
+<pre><code class="language-bash">composer create-project laravel/lumen /var/www/app --prefer-dist
+</code></pre>
+
+<h4 id="php-fpm-pool">php-fpm pool</h4>
+
+<pre><code class="language-ini">listen = 127.0.0.1:9000
+</code></pre>
+
+<h4 id="apache-vhost">Apache vhost</h4>
+
+<p>Additional options and steps can be found <a href="https://wiki.apache.org/httpd/PHP-FPM">here</a>.</p>
+
+<pre><code>&lt;VirtualHost *:80&gt;
+        ServerAdmin webmaster@localhost
+        DocumentRoot /var/www/app/public
+        ErrorLog ${APACHE_LOG_DIR}/error.log
+        CustomLog ${APACHE_LOG_DIR}/access.log combined
+        &lt;Directory &quot;/var/www/app/public&quot;&gt;
+                Order allow,deny
+                Allow from all
+                Require all granted
+        &lt;/Directory&gt;
+
+        ProxyPassMatch ^/(.*\.php(/.*)?)$ fcgi://127.0.0.1:9000/var/www/app/public/$1
+        DirectoryIndex /index.php index.php
+&lt;/VirtualHost&gt;
+</code></pre>
+
+<h4 id="vagrantfile">Vagrantfile</h4>
+
+<p>This is a sample vagrantfile I used to do the above.</p>
+
+<pre><code class="language-ruby">Vagrant.configure(2) do |config|
+  config.vm.box = &quot;ubuntu/trusty64&quot;
+  config.vm.network &quot;forwarded_port&quot;, guest: 80, host: 5555
+  config.vm.network &quot;private_network&quot;, ip: &quot;192.168.33.10&quot;
+  config.vm.synced_folder &quot;./app&quot;, &quot;/var/www/app&quot;, type: &quot;nfs&quot;
+  config.vm.provider &quot;virtualbox&quot; do |vb|
+   vb.memory = &quot;1024&quot;
+  end
+end
+</code></pre>
+
+<p>I hope it helps :)</p>
+
+      </article>
+
+      <ul class="pager blog-pager">
+        
+        <li class="previous">
+          <a href="http://redstalker.com/blog/2014/11/27/preparing-integers-with-doctrine/" data-toggle="tooltip" data-placement="top" title="Preparing Integers With Doctrine">&larr; Previous Post</a>
+        </li>
+        
+        
+        <li class="next">
+          <a href="http://redstalker.com/blog/2015/12/07/basic-sqlx-relation-scanning/" data-toggle="tooltip" data-placement="top" title="basic sqlx relation scanning">Next Post &rarr;</a>
+        </li>
+        
+      </ul>
+
+      
+      <div class="disqus-comments">
+        <div id="disqus_thread"></div>
+<script type="text/javascript">
+    var disqus_shortname = 'redstalker';
+    var disqus_identifier = 'http:\/\/redstalker.com\/blog\/2015\/12\/06\/install-php7\/';
+    var disqus_title = 'Install PHP7';
+    var disqus_url = 'http:\/\/redstalker.com\/blog\/2015\/12\/06\/install-php7\/';
+
+    (function() {
+        var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+        dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+        (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    })();
+</script>
+<noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+<a href="http://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+      </div>
+      
+
+    </div>
+  </div>
+</div>
+
+      
+
+    </div>
+
+    <footer>
+  <div class="container beautiful-jekyll-footer">
+    <div class="row">
+      <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+        <ul class="list-inline text-center footer-links">
+          
+          
+          <li>
+            <a href="https://github.com/taion809" title="GitHub">
+              <span class="fa-stack fa-lg">
+                <i class="fa fa-circle fa-stack-2x"></i>
+                <i class="fa fa-github fa-stack-1x fa-inverse"></i>
+              </span>
+            </a>
+          </li>
+          
+		      
+          <li>
+            <a href="https://twitter.com/taion809" title="Twitter">
+              <span class="fa-stack fa-lg">
+                <i class="fa fa-circle fa-stack-2x"></i>
+                <i class="fa fa-twitter fa-stack-1x fa-inverse"></i>
+              </span>
+            </a>
+          </li>
+          
+		      
+		      
+	    	  
+          
+          
+
+    		  <li>
+      			<a href="http://redstalker.com/index.xml" title="RSS">
+      			  <span class="fa-stack fa-lg">
+        				<i class="fa fa-circle fa-stack-2x"></i>
+        				<i class="fa fa-rss fa-stack-1x fa-inverse"></i>
+      			  </span>
+      			</a>
+    		  </li>		
+
+        </ul>
+        <p class="copyright text-muted">
+    		  Nicholas J
+    		  &nbsp;&bull;&nbsp;
+    		  2015
+    		  
+    		  
+    		  &nbsp;&bull;&nbsp;
+    		  <a href="http://redstalker.com/">Redstalker</a>
+    		  
+  	    </p>
+  	        
+    		<p class="theme-by text-muted">
+    		  Theme by
+    		  <a href="http://deanattali.com/beautiful-jekyll/">beautiful-jekyll</a>
+    		</p>
+      </div>
+    </div>
+  </div>
+</footer>
+
+<script src="http://redstalker.com/js/jquery-1.11.2.min.js"></script>
+<script src="http://redstalker.com/js/bootstrap.min.js"></script>
+<script src="http://redstalker.com/js/main.js"></script>
+
+
+
+  </body>
+</html>

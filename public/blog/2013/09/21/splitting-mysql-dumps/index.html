@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="en">
+
+  <head>
+  <meta charset="utf-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+
+  <title>Splitting Mysql Dumps</title>
+
+  <meta name="author" content="Nicholas J" />
+  
+  
+  <meta name="description" content="Setting up Jenkins and Bitbucket for fun and adventure.">
+  
+
+  <meta name="generator" content="Hugo 0.16" />
+
+  <link rel="alternate" href="http://redstalker.com/index.xml" type="application/rss+xml" title="Redstalker">
+
+  <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/font-awesome/4.5.0/css/font-awesome.min.css" />
+  <link rel="stylesheet" href="http://redstalker.com/css/bootstrap.min.css" />
+  <link rel="stylesheet" href="http://redstalker.com/css/main.css" />
+  <link rel="stylesheet" href="//fonts.googleapis.com/css?family=Lora:400,700,400italic,700italic" />
+  <link rel="stylesheet" href="//fonts.googleapis.com/css?family=Open+Sans:300italic,400italic,600italic,700italic,800italic,400,300,600,700,800" />
+  <link rel="stylesheet" href="http://redstalker.com/css/pygment_highlights.css" />
+  
+  
+  <meta property="og:title" content="Splitting Mysql Dumps" />
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="/" />
+  <meta property="og:image" content="" />
+  
+</head>
+
+
+  <body>
+
+    <nav class="navbar navbar-default navbar-fixed-top navbar-custom">
+  <div class="container-fluid">
+    <div class="navbar-header">
+      <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#main-navbar">
+        <span class="sr-only">Toggle navigation</span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+      <a class="navbar-brand" href="http://redstalker.com/">Redstalker</a>
+    </div>
+
+    <div class="collapse navbar-collapse" id="main-navbar">
+      <ul class="nav navbar-nav navbar-right">
+      
+      </ul>
+    </div>
+
+	<div class="avatar-container">
+	  <div class="avatar-img-border">
+      
+	  </div>
+	</div>
+
+  </div>
+</nav>
+
+
+    <div role="main" class="container main-content">
+
+      
+        
+
+
+
+
+
+<header class="header-section ">
+
+<div class="intro-header no-img">
+  <div class="container">
+    <div class="row">
+      <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+        <div class="post-heading">
+          <h1>Splitting Mysql Dumps</h1>
+      
+      
+      
+      <span class="post-meta">Posted on September 21, 2013</span>
+      
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+</header>
+
+
+
+
+<div class="container">
+  <div class="row">
+    <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+      <article role="main" class="blog-post">
+          
+
+<p>The version of phpMyAdmin on Rackspace Cloud Sites has a hard limit of 16Mb for imported SQL. I recently had to migrate a database that was over 500Mb.</p>
+
+<p>The solution was simple but tedious, export the database schema first and import it in phpMyAdmin then separate the data into many separate files below 16Mb.</p>
+
+<p>I came up with a lot of ridiculous solutions using python, perl, combinations of science and voodoo until I realized the solution already existed, Linux. Utilizing the split and sed we can split the database dump into many small parts.</p>
+
+<h4 id="split">Split</h4>
+
+<p>In order to split the file effectively it will take a little experimentation (this is really fast though so it shouldn&rsquo;t take long to figure out).</p>
+
+<pre><code>split -l 40000 big_giant_db.dump
+</code></pre>
+
+<p>Will split a file into individual files with 40,000 lines each. Splitting this way will yield files of varying sizes and depending on the data you may still have files over 16Mb which will need to be dealt with in the same way (kind of like recursion, no?).</p>
+
+<h4 id="processing">Processing</h4>
+
+<p>I needed to disable foreign key constraints and wrap each file in a transaction but editing 90 individual files is a pain in the butt, so let&rsquo;s skip that and do it with sed!</p>
+
+<p>The following command will build a list of files starting with &lsquo;x&rsquo;, which is the output from split, and run sed against them to place text in the beginning of the file.</p>
+
+<pre><code>find ./x* -type f -print0 | while IFS= read -r -d '' filename;\
+do sed -i '1s/^/\n\nSET FOREIGN_KEY_CHECKS=0;\nSET SQL_MODE = \&quot;NO_AUTO_VALUE_ON_ZERO\&quot;;\nSET AUTOCOMMIT = 0;\nSET time_zone = \&quot;+00:00\&quot;;\nSTART TRANSACTION;\n\n /' $filename;\
+done
+</code></pre>
+
+<p>Holy crap! You thought you had escaped your sed and perl nightmares, didn&rsquo;t you?</p>
+
+<p>The output will look something like this</p>
+
+<pre><code>SET FOREIGN_KEY_CHECKS=0;
+SET SQL_MODE = &quot;NO_AUTO_VALUE_ON_ZERO&quot;;
+SET AUTOCOMMIT = 0;
+SET time_zone = &quot;+00:00&quot;;
+START TRANSACTION;
+</code></pre>
+
+<p>To finish up we need to add the sql commit and re enable foreign key checks, so let&rsquo;s get to it.</p>
+
+<pre><code>find ./x* -type f -print0 | while IFS= read -r -d '' filename;\
+do sed -i '$s/$/\n\nCOMMIT;\nSET FOREIGN_KEY_CHECKS=1;\n\n /' $filename;\
+done
+</code></pre>
+
+<p>Like the command before, this will append text to the bottom of each file generated by the find command.</p>
+
+<p>The output will look something like this</p>
+
+<pre><code>COMMIT;
+SET FOREIGN_KEY_CHECKS=1;
+</code></pre>
+
+<p>I hope this helped someone else, I apologize for formatting. If you know a better way to do this send me an email, twitter, comment, pull request, or smoke signal.</p>
+
+<h4 id="update">Update</h4>
+
+<p>So, had I read the damn Rackspace Cloud Sites KB in the first place I would have known that it is possible to import a database through a shell script</p>
+
+<pre><code>#!/bin/sh
+mysql -h host-u user -p'password' db_name &lt; /path/to/backup.sql
+</code></pre>
+
+<h4 id="references">References</h4>
+
+<ol>
+<li><a href="https://gist.github.com/taion809/6603818">My gist</a></li>
+<li><a href="http://stackoverflow.com/questions/132902/how-do-i-split-the-output-from-mysqldump-into-smaller-files">Stackoverflow</a></li>
+</ol>
+
+      </article>
+
+      <ul class="pager blog-pager">
+        
+        <li class="previous">
+          <a href="http://redstalker.com/blog/2013/08/20/jenkins-ci-deployment-with-bitbucket/" data-toggle="tooltip" data-placement="top" title="Jenkins CI Deployment with Bitbucket">&larr; Previous Post</a>
+        </li>
+        
+        
+        <li class="next">
+          <a href="http://redstalker.com/blog/2013/11/09/docker-containing-madness/" data-toggle="tooltip" data-placement="top" title="Docker: Containing Madness">Next Post &rarr;</a>
+        </li>
+        
+      </ul>
+
+      
+      <div class="disqus-comments">
+        <div id="disqus_thread"></div>
+<script type="text/javascript">
+    var disqus_shortname = 'redstalker';
+    var disqus_identifier = 'http:\/\/redstalker.com\/blog\/2013\/09\/21\/splitting-mysql-dumps\/';
+    var disqus_title = 'Splitting Mysql Dumps';
+    var disqus_url = 'http:\/\/redstalker.com\/blog\/2013\/09\/21\/splitting-mysql-dumps\/';
+
+    (function() {
+        var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+        dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+        (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    })();
+</script>
+<noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+<a href="http://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+      </div>
+      
+
+    </div>
+  </div>
+</div>
+
+      
+
+    </div>
+
+    <footer>
+  <div class="container beautiful-jekyll-footer">
+    <div class="row">
+      <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+        <ul class="list-inline text-center footer-links">
+          
+          
+          <li>
+            <a href="https://github.com/taion809" title="GitHub">
+              <span class="fa-stack fa-lg">
+                <i class="fa fa-circle fa-stack-2x"></i>
+                <i class="fa fa-github fa-stack-1x fa-inverse"></i>
+              </span>
+            </a>
+          </li>
+          
+		      
+          <li>
+            <a href="https://twitter.com/taion809" title="Twitter">
+              <span class="fa-stack fa-lg">
+                <i class="fa fa-circle fa-stack-2x"></i>
+                <i class="fa fa-twitter fa-stack-1x fa-inverse"></i>
+              </span>
+            </a>
+          </li>
+          
+		      
+		      
+	    	  
+          
+          
+
+    		  <li>
+      			<a href="http://redstalker.com/index.xml" title="RSS">
+      			  <span class="fa-stack fa-lg">
+        				<i class="fa fa-circle fa-stack-2x"></i>
+        				<i class="fa fa-rss fa-stack-1x fa-inverse"></i>
+      			  </span>
+      			</a>
+    		  </li>		
+
+        </ul>
+        <p class="copyright text-muted">
+    		  Nicholas J
+    		  &nbsp;&bull;&nbsp;
+    		  2015
+    		  
+    		  
+    		  &nbsp;&bull;&nbsp;
+    		  <a href="http://redstalker.com/">Redstalker</a>
+    		  
+  	    </p>
+  	        
+    		<p class="theme-by text-muted">
+    		  Theme by
+    		  <a href="http://deanattali.com/beautiful-jekyll/">beautiful-jekyll</a>
+    		</p>
+      </div>
+    </div>
+  </div>
+</footer>
+
+<script src="http://redstalker.com/js/jquery-1.11.2.min.js"></script>
+<script src="http://redstalker.com/js/bootstrap.min.js"></script>
+<script src="http://redstalker.com/js/main.js"></script>
+
+
+
+  </body>
+</html>
