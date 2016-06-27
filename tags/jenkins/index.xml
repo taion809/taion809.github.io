@@ -2,20 +2,20 @@
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
     <title>Jenkins on Redstalker</title>
-    <link>http://taion809.github.io/tags/jenkins/</link>
+    <link>https://taion809.github.io/tags/jenkins/</link>
     <description>Recent content in Jenkins on Redstalker</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
     <copyright>Copyright (c) 2013 - 2015, Redstalker.com; All Rights Reserved.</copyright>
     <lastBuildDate>Tue, 20 Aug 2013 13:23:00 +0000</lastBuildDate>
-    <atom:link href="http://taion809.github.io/tags/jenkins/index.xml" rel="self" type="application/rss+xml" />
+    <atom:link href="https://taion809.github.io/tags/jenkins/index.xml" rel="self" type="application/rss+xml" />
     
     <item>
       <title>Jenkins CI Deployment with Bitbucket</title>
-      <link>http://taion809.github.io/blog/2013/08/20/jenkins-ci-deployment-with-bitbucket/</link>
+      <link>https://taion809.github.io/blog/2013/08/20/jenkins-ci-deployment-with-bitbucket/</link>
       <pubDate>Tue, 20 Aug 2013 13:23:00 +0000</pubDate>
       
-      <guid>http://taion809.github.io/blog/2013/08/20/jenkins-ci-deployment-with-bitbucket/</guid>
+      <guid>https://taion809.github.io/blog/2013/08/20/jenkins-ci-deployment-with-bitbucket/</guid>
       <description>
 
 &lt;p&gt;I recently had someone ask me how to get started with Jenkins-CI, git, and ssh. My team is using it now for a CI-git deployment scheme but I was not the one to install or configure it. I didn&amp;rsquo;t really want to let down my friend with an &amp;ldquo;I don&amp;rsquo;t know, google it&amp;rdquo; answer so I spun up a new EC2 instance on Amazon AWS, installed Jenkins, pushed a new private repo to bitbucket, pulled and deployed that push on my Jenkins test server.&lt;/p&gt;

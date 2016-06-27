@@ -2,20 +2,20 @@
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
     <title>Docker on Redstalker</title>
-    <link>http://taion809.github.io/tags/docker/</link>
+    <link>https://taion809.github.io/tags/docker/</link>
     <description>Recent content in Docker on Redstalker</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
     <copyright>Copyright (c) 2013 - 2015, Redstalker.com; All Rights Reserved.</copyright>
     <lastBuildDate>Sat, 09 Nov 2013 01:31:43 +0000</lastBuildDate>
-    <atom:link href="http://taion809.github.io/tags/docker/index.xml" rel="self" type="application/rss+xml" />
+    <atom:link href="https://taion809.github.io/tags/docker/index.xml" rel="self" type="application/rss+xml" />
     
     <item>
       <title>Docker: Containing Madness</title>
-      <link>http://taion809.github.io/blog/2013/11/09/docker-containing-madness/</link>
+      <link>https://taion809.github.io/blog/2013/11/09/docker-containing-madness/</link>
       <pubDate>Sat, 09 Nov 2013 01:31:43 +0000</pubDate>
       
-      <guid>http://taion809.github.io/blog/2013/11/09/docker-containing-madness/</guid>
+      <guid>https://taion809.github.io/blog/2013/11/09/docker-containing-madness/</guid>
       <description>
 
 &lt;p&gt;Recently we had one of our important clients come to us with a node.js application they needed updated.  I&amp;rsquo;m not sure of the circumstances surrounding this application but it looked and felt like a ball of spaghetti was thrown in my face.  I punted the modifications to another developer in favor of doing the deployment with docker and supervisord.&lt;/p&gt;

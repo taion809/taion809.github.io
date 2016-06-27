@@ -2,20 +2,20 @@
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
     <title>Development on Redstalker</title>
-    <link>http://taion809.github.io/categories/development/</link>
+    <link>https://taion809.github.io/categories/development/</link>
     <description>Recent content in Development on Redstalker</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
     <copyright>Copyright (c) 2013 - 2015, Redstalker.com; All Rights Reserved.</copyright>
     <lastBuildDate>Mon, 07 Dec 2015 09:00:43 -0500</lastBuildDate>
-    <atom:link href="http://taion809.github.io/categories/development/index.xml" rel="self" type="application/rss+xml" />
+    <atom:link href="https://taion809.github.io/categories/development/index.xml" rel="self" type="application/rss+xml" />
     
     <item>
       <title>basic sqlx relation scanning</title>
-      <link>http://taion809.github.io/blog/2015/12/07/basic-sqlx-relation-scanning/</link>
+      <link>https://taion809.github.io/blog/2015/12/07/basic-sqlx-relation-scanning/</link>
       <pubDate>Mon, 07 Dec 2015 09:00:43 -0500</pubDate>
       
-      <guid>http://taion809.github.io/blog/2015/12/07/basic-sqlx-relation-scanning/</guid>
+      <guid>https://taion809.github.io/blog/2015/12/07/basic-sqlx-relation-scanning/</guid>
       <description>&lt;p&gt;Very quick, I wanted to use &lt;code&gt;Get&lt;/code&gt; with a query that contained other tables.  The documentation does not have a lot of examples so here we go.&lt;/p&gt;
 
 &lt;p&gt;Given the following database schema&lt;/p&gt;
@@ -104,10 +104,10 @@ func main() {
     
     <item>
       <title>Install PHP7</title>
-      <link>http://taion809.github.io/blog/2015/12/06/install-php7/</link>
+      <link>https://taion809.github.io/blog/2015/12/06/install-php7/</link>
       <pubDate>Sun, 06 Dec 2015 14:24:50 -0500</pubDate>
       
-      <guid>http://taion809.github.io/blog/2015/12/06/install-php7/</guid>
+      <guid>https://taion809.github.io/blog/2015/12/06/install-php7/</guid>
       <description>
 
 &lt;p&gt;&lt;a href=&#34;http://php.net/archive/2015.php#id2015-12-03-1&#34;&gt;PHP7 was released this month&lt;/a&gt;, exciting! So how do you get ahold of it?&lt;/p&gt;
@@ -228,10 +228,10 @@ end
     
     <item>
       <title>Preparing Integers With Doctrine</title>
-      <link>http://taion809.github.io/blog/2014/11/27/preparing-integers-with-doctrine/</link>
+      <link>https://taion809.github.io/blog/2014/11/27/preparing-integers-with-doctrine/</link>
       <pubDate>Thu, 27 Nov 2014 13:57:00 +0000</pubDate>
       
-      <guid>http://taion809.github.io/blog/2014/11/27/preparing-integers-with-doctrine/</guid>
+      <guid>https://taion809.github.io/blog/2014/11/27/preparing-integers-with-doctrine/</guid>
       <description>&lt;p&gt;I recently had an issue with binding an integer to a select statement with doctrine and postgresql.&lt;/p&gt;
 
 &lt;p&gt;Given the following:&lt;/p&gt;
@@ -286,10 +286,10 @@ end
     
     <item>
       <title>Getting Started with Gorilla MUX</title>
-      <link>http://taion809.github.io/blog/2014/04/19/getting-started-with-gorilla-mux/</link>
+      <link>https://taion809.github.io/blog/2014/04/19/getting-started-with-gorilla-mux/</link>
       <pubDate>Sat, 19 Apr 2014 16:05:12 +0000</pubDate>
       
-      <guid>http://taion809.github.io/blog/2014/04/19/getting-started-with-gorilla-mux/</guid>
+      <guid>https://taion809.github.io/blog/2014/04/19/getting-started-with-gorilla-mux/</guid>
       <description>
 
 &lt;p&gt;This is going to be short and sweet.  I have been looking at getting into Go for awhile but lacked incentive.  That has, as of a week ago, changed and it&amp;rsquo;s full speed ahead.&lt;/p&gt;
@@ -350,10 +350,10 @@ func main() {
     
     <item>
       <title>Docker: Containing Madness</title>
-      <link>http://taion809.github.io/blog/2013/11/09/docker-containing-madness/</link>
+      <link>https://taion809.github.io/blog/2013/11/09/docker-containing-madness/</link>
       <pubDate>Sat, 09 Nov 2013 01:31:43 +0000</pubDate>
       
-      <guid>http://taion809.github.io/blog/2013/11/09/docker-containing-madness/</guid>
+      <guid>https://taion809.github.io/blog/2013/11/09/docker-containing-madness/</guid>
       <description>
 
 &lt;p&gt;Recently we had one of our important clients come to us with a node.js application they needed updated.  I&amp;rsquo;m not sure of the circumstances surrounding this application but it looked and felt like a ball of spaghetti was thrown in my face.  I punted the modifications to another developer in favor of doing the deployment with docker and supervisord.&lt;/p&gt;
@@ -481,10 +481,10 @@ server {
     
     <item>
       <title>Splitting Mysql Dumps</title>
-      <link>http://taion809.github.io/blog/2013/09/21/splitting-mysql-dumps/</link>
+      <link>https://taion809.github.io/blog/2013/09/21/splitting-mysql-dumps/</link>
       <pubDate>Sat, 21 Sep 2013 10:27:15 +0000</pubDate>
       
-      <guid>http://taion809.github.io/blog/2013/09/21/splitting-mysql-dumps/</guid>
+      <guid>https://taion809.github.io/blog/2013/09/21/splitting-mysql-dumps/</guid>
       <description>
 
 &lt;p&gt;The version of phpMyAdmin on Rackspace Cloud Sites has a hard limit of 16Mb for imported SQL. I recently had to migrate a database that was over 500Mb.&lt;/p&gt;
@@ -560,10 +560,10 @@ mysql -h host-u user -p&#39;password&#39; db_name &amp;lt; /path/to/backup.sql
     
     <item>
       <title>Jenkins CI Deployment with Bitbucket</title>
-      <link>http://taion809.github.io/blog/2013/08/20/jenkins-ci-deployment-with-bitbucket/</link>
+      <link>https://taion809.github.io/blog/2013/08/20/jenkins-ci-deployment-with-bitbucket/</link>
       <pubDate>Tue, 20 Aug 2013 13:23:00 +0000</pubDate>
       
-      <guid>http://taion809.github.io/blog/2013/08/20/jenkins-ci-deployment-with-bitbucket/</guid>
+      <guid>https://taion809.github.io/blog/2013/08/20/jenkins-ci-deployment-with-bitbucket/</guid>
       <description>
 
 &lt;p&gt;I recently had someone ask me how to get started with Jenkins-CI, git, and ssh. My team is using it now for a CI-git deployment scheme but I was not the one to install or configure it. I didn&amp;rsquo;t really want to let down my friend with an &amp;ldquo;I don&amp;rsquo;t know, google it&amp;rdquo; answer so I spun up a new EC2 instance on Amazon AWS, installed Jenkins, pushed a new private repo to bitbucket, pulled and deployed that push on my Jenkins test server.&lt;/p&gt;

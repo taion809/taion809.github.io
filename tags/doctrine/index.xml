@@ -2,20 +2,20 @@
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
     <title>Doctrine on Redstalker</title>
-    <link>http://taion809.github.io/tags/doctrine/</link>
+    <link>https://taion809.github.io/tags/doctrine/</link>
     <description>Recent content in Doctrine on Redstalker</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
     <copyright>Copyright (c) 2013 - 2015, Redstalker.com; All Rights Reserved.</copyright>
     <lastBuildDate>Thu, 27 Nov 2014 13:57:00 +0000</lastBuildDate>
-    <atom:link href="http://taion809.github.io/tags/doctrine/index.xml" rel="self" type="application/rss+xml" />
+    <atom:link href="https://taion809.github.io/tags/doctrine/index.xml" rel="self" type="application/rss+xml" />
     
     <item>
       <title>Preparing Integers With Doctrine</title>
-      <link>http://taion809.github.io/blog/2014/11/27/preparing-integers-with-doctrine/</link>
+      <link>https://taion809.github.io/blog/2014/11/27/preparing-integers-with-doctrine/</link>
       <pubDate>Thu, 27 Nov 2014 13:57:00 +0000</pubDate>
       
-      <guid>http://taion809.github.io/blog/2014/11/27/preparing-integers-with-doctrine/</guid>
+      <guid>https://taion809.github.io/blog/2014/11/27/preparing-integers-with-doctrine/</guid>
       <description>&lt;p&gt;I recently had an issue with binding an integer to a select statement with doctrine and postgresql.&lt;/p&gt;
 
 &lt;p&gt;Given the following:&lt;/p&gt;
